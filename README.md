@@ -1,3 +1,8 @@
 ### Surfex (SURface EXplorer) ###
-Lära mig lite om mjukvaruutveckling, structs, opengl, grafik, FEM, cmake samt hur man släpper en programvara för andra på github. 
+Python library for quickly graphing a two-variable function.  
+
+<p align="center">
+  <img src="images/sinc(r).png" width="45%"/>
+  <img src="images/cosrsinr.png" width="45%"/>
+</p>
 

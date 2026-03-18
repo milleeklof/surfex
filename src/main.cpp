@@ -157,15 +157,15 @@ void main()
 //           FUNCTION
 // =================================
 
+//float func(float x, float y)
+//{
+//    return 15*std::sin(5*(sqrt(pow(x, 2) + pow(y, 2))))/(5*(sqrt(pow(x, 2) + pow(y, 2))));
+//}
+
 float func(float x, float y)
 {
-    return 15*std::sin(5*(sqrt(pow(x, 2) + pow(y, 2))))/(5*(sqrt(pow(x, 2) + pow(y, 2))));
+    return 3*cos(x)*sin(y);
 }
-
-/* float func(float x, float y)
-{
-    return cos(x)*sin(y);
-} */
 
 
 
