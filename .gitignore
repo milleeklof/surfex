@@ -17,6 +17,7 @@ Makefile
 # Binaries
 *.out
 *.exe
+*.so
 
 # Random
 backup_main
