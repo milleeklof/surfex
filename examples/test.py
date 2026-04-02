@@ -1,4 +1,5 @@
 import surfex
+import math as m
 
 
 def f(x, y):
@@ -6,7 +7,7 @@ def f(x, y):
 
 
 def g(x, y):
-      return x*y
+      return m.sin(x**2 + y**2) / (x**2 + y**2) 
 
 
 
