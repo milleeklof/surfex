@@ -13,3 +13,6 @@ def g(x, y):
 
 if __name__ == "__main__":
     surfex.init(g, [-5.0, 5.0], [-5.0, 5.0])
+
+
+# PYTHONPATH=python python examples/test.py
