@@ -9,10 +9,11 @@ def f(x, y):
 def g(x, y):
       return m.sin(x**2 + y**2) / (x**2 + y**2) 
 
-
+def h(x, y):
+    return x+y
 
 if __name__ == "__main__":
-    surfex.init(g, [-5.0, 5.0], [-5.0, 5.0])
+    surfex.init(f, [-5.0, 5.0], [-5.0, 5.0])
 
 
 # PYTHONPATH=python python examples/test.py
