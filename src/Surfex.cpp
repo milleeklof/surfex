@@ -4,11 +4,14 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
-#include <utility>
 
 #include <glm/gtc/type_ptr.hpp>
 
 namespace {
+bool hasLastWindowPosition = false;
+int lastWindowX = 0;
+int lastWindowY = 0;
+
 const char *vertexShaderSource = R"(
 #version 330 core
 
@@ -44,6 +47,7 @@ out vec4 FragColor;
 uniform vec3 lightDir;
 uniform vec3 baseColor;
 uniform int renderMode;
+uniform float alpha;
 
 vec3 heatmap(float t)
 {
@@ -89,24 +93,64 @@ void main()
     vec3 ambient = 0.2 * color;
     vec3 diffuse = diff * color;
 
-    FragColor = vec4(ambient + diffuse, 1.0);
+    FragColor = vec4(ambient + diffuse, alpha);
 }
 )";
 } // namespace
 
-Surfex::Surfex(Function2D func, std::array<float, 2> xRange,
-               std::array<float, 2> yRange)
-    : function_(std::move(func)), xRange_(xRange), yRange_(yRange) {}
+glm::vec3 Surfex::colorFromName(const std::string& color) {
+  if (color == "red") {
+    return glm::vec3(1.0f, 0.2f, 0.2f);
+  }
+
+  if (color == "green") {
+    return glm::vec3(0.2f, 1.0f, 0.3f);
+  }
+
+  if (color == "yellow") {
+    return glm::vec3(1.0f, 0.9f, 0.2f);
+  }
+
+  return glm::vec3(0.2f, 0.6f, 1.0f);
+}
+
+bool Surfex::isHeatmap(const std::string& color) {
+  return color == "heatmap";
+}
+
+Surfex::Surfex(std::array<float, 2> xRange, std::array<float, 2> yRange) {
+  this->xmin = xRange[0];
+  this->xmax = xRange[1];
+  this->ymin = yRange[0];
+  this->ymax = yRange[1];
+}
 
 Surfex::~Surfex() { cleanup(); }
+
+Surfex::Surface Surfex::add(Function2D func, const std::string& color, float alpha) {
+  return add(func, std::array<float, 2>{xmin, xmax}, std::array<float, 2>{ymin, ymax}, color, alpha);
+}
+
+Surfex::Surface Surfex::add(Function2D func,
+                            std::array<float, 2> xRange,
+                            std::array<float, 2> yRange,
+                            const std::string& color,
+                            float alpha) {
+  Surface surface;
+  surface.mesh = generateSurfaceMesh(func, xRange[0], xRange[1], yRange[0], yRange[1], nx, ny);
+  surface.color = color;
+  surface.alpha = alpha;
+  surfaces.push_back(surface);
+  return surface;
+}
 
 void Surfex::setResolution(int nx, int ny) {
   if (nx < 2 || ny < 2) {
     throw std::invalid_argument("Resolution must be at least 2x2.");
   }
 
-  nx_ = nx;
-  ny_ = ny;
+  this->nx = nx;
+  this->ny = ny;
 }
 
 void Surfex::setWindowSize(int width, int height) {
@@ -114,30 +158,50 @@ void Surfex::setWindowSize(int width, int height) {
     throw std::invalid_argument("Window size must be positive.");
   }
 
-  windowWidth_ = width;
-  windowHeight_ = height;
+  this->windowWidth = width;
+  this->windowHeight = height;
 }
 
-void Surfex::setTitle(const std::string &title) { title_ = title; }
+void Surfex::setTitle(const std::string& title) { this->title = title; }
 
-void Surfex::keyCallback(GLFWwindow *window, int key, int scancode, int action,
-                         int mods) {
+void Surfex::setTargetOrientation(float yaw, float pitch) {
+  this->targetYaw = yaw;
+  this->targetPitch = pitch;
+  this->orientationAnimating = true;
+}
+
+void Surfex::updateOrientation(float deltaTime) {
+  if (!orientationAnimating) {
+    return;
+  }
+
+  const float animationSpeed = glm::radians(180.0f) * deltaTime;
+
+  if (camera.yaw < targetYaw) {
+    camera.yaw = std::min(camera.yaw + animationSpeed, targetYaw);
+  } else if (camera.yaw > targetYaw) {
+    camera.yaw = std::max(camera.yaw - animationSpeed, targetYaw);
+  }
+
+  if (camera.pitch < targetPitch) {
+    camera.pitch = std::min(camera.pitch + animationSpeed, targetPitch);
+  } else if (camera.pitch > targetPitch) {
+    camera.pitch = std::max(camera.pitch - animationSpeed, targetPitch);
+  }
+
+  if (camera.yaw == targetYaw && camera.pitch == targetPitch) {
+    orientationAnimating = false;
+  }
+}
+
+void Surfex::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  (void)window;
+  (void)key;
   (void)scancode;
   (void)mods;
 
   if (action != GLFW_PRESS) {
     return;
-  }
-
-  Surfex *self = static_cast<Surfex *>(glfwGetWindowUserPointer(window));
-  if (!self) {
-    return;
-  }
-
-  if (key == GLFW_KEY_H) {
-    self->renderMode_ = self->renderMode_ == RenderMode::Solid
-                            ? RenderMode::Heatmap
-                            : RenderMode::Solid;
   }
 }
 
@@ -150,17 +214,20 @@ void Surfex::initWindow() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  window_ = glfwCreateWindow(windowWidth_, windowHeight_, title_.c_str(),
-                             nullptr, nullptr);
+  this->window = glfwCreateWindow(windowWidth, windowHeight, title.c_str(), nullptr, nullptr);
 
-  if (!window_) {
+  if (!window) {
     glfwTerminate();
     throw std::runtime_error("Failed to create GLFW window.");
   }
 
-  glfwMakeContextCurrent(window_);
-  glfwSetWindowUserPointer(window_, this);
-  glfwSetKeyCallback(window_, keyCallback);
+  if (hasLastWindowPosition) {
+    glfwSetWindowPos(window, lastWindowX, lastWindowY);
+  }
+
+  glfwMakeContextCurrent(window);
+  glfwSetWindowUserPointer(window, this);
+  glfwSetKeyCallback(window, keyCallback);
 }
 
 void Surfex::initGL() {
@@ -169,106 +236,119 @@ void Surfex::initGL() {
   }
 
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-  surfaceShader_ =
-      std::make_unique<Shader>(vertexShaderSource, fragmentShaderSource);
-}
-
-void Surfex::createMesh() {
-  mesh_ = generateSurfaceMesh(function_, xRange_[0], xRange_[1], yRange_[0],
-                              yRange_[1], nx_, ny_);
-
-  float maxAbsX = std::max(std::abs(xRange_[0]), std::abs(xRange_[1]));
-  float maxAbsY = std::max(std::abs(yRange_[0]), std::abs(yRange_[1]));
-  halfLength_ = std::max(maxAbsX, maxAbsY);
-  if (halfLength_ <= 0.0f) {
-    halfLength_ = 1.0f;
-  }
+  this->surfaceShader = new Shader(vertexShaderSource, fragmentShaderSource);
 }
 
 void Surfex::createCamera() {
-  camera_.pitch = 3.14f / 8.0f;
-  camera_.yaw = 3.14f / 4.0f;
-  camera_.radius = 3.0f * halfLength_;
-  camera_.target = glm::vec3(0.0f, 0.0f, 0.0f);
+  this->camera.pitch = 3.14f / 8.0f;
+  this->camera.yaw = 3.14f / 4.0f;
+
+  const float xSpan = xmax - xmin;
+  const float ySpan = ymax - ymin;
+  float maxSpan = std::max(xSpan, ySpan);
+  if (maxSpan <= 0.0f) {
+    maxSpan = 1.0f;
+  }
+
+  this->camera.radius = 1.5f * maxSpan;
+  this->camera.target = glm::vec3((xmin + xmax) * 0.5f, (ymin + ymax) * 0.5f, 0.0f);
 }
 
 void Surfex::createGrid() {
-  grid_ = std::make_unique<Grid>(halfLength_ * 1.5f, 1.0f);
+  this->grid = new Grid(xmin, xmax, ymin, ymax, 1.0f);
 }
 
-void Surfex::createAxis() { axis_ = std::make_unique<Axis>(); }
+void Surfex::createAxis() { this->axis = new Axis(); }
 
 void Surfex::createBuffers() {
-  glGenVertexArrays(1, &VAO_);
-  glGenBuffers(1, &VBO_);
-  glGenBuffers(1, &EBO_);
+  for (std::size_t i = 0; i < surfaces.size(); ++i) {
+    Surface& surface = surfaces[i];
 
-  glBindVertexArray(VAO_);
+    glGenVertexArrays(1, &surface.VAO);
+    glGenBuffers(1, &surface.VBO);
+    glGenBuffers(1, &surface.EBO);
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-  glBufferData(GL_ARRAY_BUFFER, mesh_.vertices.size() * sizeof(float),
-               mesh_.vertices.data(), GL_STATIC_DRAW);
+    glBindVertexArray(surface.VAO);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               mesh_.indices.size() * sizeof(unsigned int),
-               mesh_.indices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, surface.VBO);
+    glBufferData(GL_ARRAY_BUFFER,
+                 surface.mesh.vertices.size() * sizeof(float),
+                 surface.mesh.vertices.data(),
+                 GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface.EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 surface.mesh.indices.size() * sizeof(unsigned int),
+                 surface.mesh.indices.data(),
+                 GL_STATIC_DRAW);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                          (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+  }
 
   glBindVertexArray(0);
 }
 
 void Surfex::processInput(float deltaTime) {
   const float rotateSpeed = glm::radians(90.0f) * deltaTime;
-  const float zoomSpeed = halfLength_ * deltaTime;
+  const float xSpan = xmax - xmin;
+  const float ySpan = ymax - ymin;
+  const float zoomSpeed = 0.5f * std::max(xSpan, ySpan) * deltaTime;
 
-  if (glfwGetKey(window_, GLFW_KEY_LEFT) == GLFW_PRESS)
-    camera_.yaw -= rotateSpeed;
-
-  if (glfwGetKey(window_, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    camera_.yaw += rotateSpeed;
-
-  if (glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS)
-    camera_.pitch += rotateSpeed;
-
-  if (glfwGetKey(window_, GLFW_KEY_DOWN) == GLFW_PRESS)
-    camera_.pitch -= rotateSpeed;
-
-  if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS && camera_.radius > 0.0f)
-    camera_.radius -= zoomSpeed;
-
-  if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
-    camera_.radius += zoomSpeed;
-
-  if (glfwGetKey(window_, GLFW_KEY_X) == GLFW_PRESS) {
-    camera_.yaw = 0.0f;
-    camera_.pitch = 0.0f;
+  if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ||
+      glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
+    camera.yaw -= rotateSpeed;
   }
 
-  if (glfwGetKey(window_, GLFW_KEY_Y) == GLFW_PRESS) {
-    camera_.yaw = 3.1415f / 2.0f;
-    camera_.pitch = 0.0f;
+  if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ||
+      glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+    camera.yaw += rotateSpeed;
   }
 
-  if (glfwGetKey(window_, GLFW_KEY_Z) == GLFW_PRESS) {
-    camera_.yaw = 0.0f;
-    camera_.pitch = 3.1415f / 2.0f;
+  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ||
+      glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+    camera.pitch += rotateSpeed;
   }
 
-  if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window_, GLFW_TRUE);
+  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ||
+      glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+    camera.pitch -= rotateSpeed;
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && camera.radius > 0.0f)
+    camera.radius -= zoomSpeed;
+
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    camera.radius += zoomSpeed;
+
+  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
+    setTargetOrientation(0.0f, 0.0f);
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
+    setTargetOrientation(3.1415f / 2.0f, 0.0f);
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
+    setTargetOrientation(0.0f, 3.1415f / 2.0f);
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
     return;
   }
 
-  camera_.clampPitch();
+  camera.clampPitch();
+  updateOrientation(deltaTime);
+  camera.clampPitch();
 }
 
 void Surfex::renderFrame() {
@@ -277,7 +357,7 @@ void Surfex::renderFrame() {
 
   int width = 0;
   int height = 0;
-  glfwGetFramebufferSize(window_, &width, &height);
+  glfwGetFramebufferSize(window, &width, &height);
   if (height == 0) {
     height = 1;
   }
@@ -286,77 +366,77 @@ void Surfex::renderFrame() {
   const float aspect = static_cast<float>(width) / static_cast<float>(height);
 
   const glm::mat4 model = glm::mat4(1.0f);
-  const glm::mat4 view = camera_.viewMatrix();
-  const glm::mat4 projection = camera_.projectionMatrix(aspect);
+  const glm::mat4 view = camera.viewMatrix();
+  const glm::mat4 projection = camera.projectionMatrix(aspect);
   const glm::mat4 MVP = projection * view * model;
 
-  surfaceShader_->use();
-  surfaceShader_->setFloat("minZ", mesh_.minZ);
-  surfaceShader_->setFloat("maxZ", mesh_.maxZ);
-  surfaceShader_->setMat4("model", model);
-  surfaceShader_->setMat4("MVP", MVP);
-  surfaceShader_->setVec3("lightDir",
-                          glm::normalize(glm::vec3(1.0f, 1.0f, 2.0f)));
-  surfaceShader_->setInt("renderMode",
-                         renderMode_ == RenderMode::Solid ? 0 : 1);
+  surfaceShader->use();
+  surfaceShader->setVec3("lightDir",
+                         glm::normalize(glm::vec3(1.0f, 1.0f, 2.0f)));
+  surfaceShader->setMat4("MVP", MVP);
+  surfaceShader->setMat4("model", model);
 
-  glm::vec3 baseColor;
-  switch (colorMode_) {
-  case ColorMode::Blue:
-    baseColor = {0.2f, 0.6f, 1.0f};
-    break;
-  case ColorMode::Red:
-    baseColor = {1.0f, 0.2f, 0.2f};
-    break;
-  case ColorMode::Green:
-    baseColor = {0.2f, 1.0f, 0.3f};
-    break;
-  case ColorMode::Yellow:
-    baseColor = {1.0f, 0.9f, 0.2f};
-    break;
-  }
-  surfaceShader_->setVec3("baseColor", baseColor);
+  for (std::size_t i = 0; i < surfaces.size(); ++i) {
+    Surface& surface = surfaces[i];
 
-  glBindVertexArray(VAO_);
-  glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh_.indices.size()),
-                 GL_UNSIGNED_INT, 0);
+    surfaceShader->setFloat("minZ", surface.mesh.minZ);
+    surfaceShader->setFloat("maxZ", surface.mesh.maxZ);
+    surfaceShader->setInt("renderMode", isHeatmap(surface.color) ? 1 : 0);
+    surfaceShader->setVec3("baseColor", colorFromName(surface.color));
+    surfaceShader->setFloat("alpha", surface.alpha);
 
-  if (showAxis_ && axis_) {
-    axis_->draw(MVP);
+    glBindVertexArray(surface.VAO);
+    glDrawElements(GL_TRIANGLES,
+                   static_cast<GLsizei>(surface.mesh.indices.size()),
+                   GL_UNSIGNED_INT,
+                   0);
   }
 
-  if (showGrid_ && grid_) {
-    grid_->draw(MVP);
+  if (showAxis && axis) {
+    axis->draw(MVP);
+  }
+
+  if (showGrid && grid) {
+    grid->draw(MVP);
   }
 
   glBindVertexArray(0);
-  glfwSwapBuffers(window_);
+  glfwSwapBuffers(window);
   glfwPollEvents();
 }
 
 void Surfex::cleanup() {
-  axis_.reset();
-  grid_.reset();
-  surfaceShader_.reset();
+  for (std::size_t i = 0; i < surfaces.size(); ++i) {
+    Surface& surface = surfaces[i];
 
-  if (EBO_ != 0) {
-    glDeleteBuffers(1, &EBO_);
-    EBO_ = 0;
+    if (surface.EBO != 0) {
+      glDeleteBuffers(1, &surface.EBO);
+      surface.EBO = 0;
+    }
+
+    if (surface.VBO != 0) {
+      glDeleteBuffers(1, &surface.VBO);
+      surface.VBO = 0;
+    }
+
+    if (surface.VAO != 0) {
+      glDeleteVertexArrays(1, &surface.VAO);
+      surface.VAO = 0;
+    }
   }
 
-  if (VBO_ != 0) {
-    glDeleteBuffers(1, &VBO_);
-    VBO_ = 0;
-  }
+  delete axis;
+  axis = nullptr;
+  delete grid;
+  grid = nullptr;
+  delete surfaceShader;
+  surfaceShader = nullptr;
 
-  if (VAO_ != 0) {
-    glDeleteVertexArrays(1, &VAO_);
-    VAO_ = 0;
-  }
-
-  if (window_) {
-    glfwDestroyWindow(window_);
-    window_ = nullptr;
+  if (window) {
+    glfwGetWindowPos(window, &lastWindowX, &lastWindowY);
+    hasLastWindowPosition = true;
+    glfwDestroyWindow(window);
+    window = nullptr;
     glfwTerminate();
   }
 }
@@ -365,7 +445,6 @@ void Surfex::run() {
   initWindow();
   try {
     initGL();
-    createMesh();
     createCamera();
     createAxis();
     createGrid();
@@ -373,7 +452,7 @@ void Surfex::run() {
 
     float lastTime = static_cast<float>(glfwGetTime());
 
-    while (!glfwWindowShouldClose(window_)) {
+    while (!glfwWindowShouldClose(window)) {
       const float currentTime = static_cast<float>(glfwGetTime());
       const float deltaTime = currentTime - lastTime;
       lastTime = currentTime;
@@ -381,6 +460,8 @@ void Surfex::run() {
       processInput(deltaTime);
       renderFrame();
     }
+
+    cleanup();
   } catch (...) {
     cleanup();
     throw;

@@ -2,11 +2,12 @@
 
 #include <array>
 #include <functional>
-#include <memory>
 #include <string>
+#include <vector>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include "Axis.h"
 #include "Camera.h"
@@ -19,11 +20,29 @@ class Surfex
 public:
     using Function2D = std::function<float(float, float)>;
 
-    Surfex(Function2D func,
-           std::array<float, 2> xRange,
-           std::array<float, 2> yRange);
+    struct Surface
+    {
+        Mesh mesh;
+        std::string color;
+        float alpha = 1.0f;
+        GLuint VAO = 0;
+        GLuint VBO = 0;
+        GLuint EBO = 0;
+    };
+
+    Surfex(std::array<float, 2> xRange, std::array<float, 2> yRange);
 
     ~Surfex();
+
+    Surface add(Function2D func,
+                const std::string& color = "blue",
+                float alpha = 1.0f);
+
+    Surface add(Function2D func,
+                std::array<float, 2> xRange,
+                std::array<float, 2> yRange,
+                const std::string& color = "blue",
+                float alpha = 1.0f);
 
     void run();
 
@@ -32,20 +51,6 @@ public:
     void setTitle(const std::string& title);
 
 private:
-    enum class RenderMode
-    {
-        Solid,
-        Heatmap
-    };
-
-    enum class ColorMode
-    {
-        Blue,
-        Red,
-        Green,
-        Yellow
-    };
-
     static void keyCallback(GLFWwindow* window,
                             int key,
                             int scancode,
@@ -54,7 +59,6 @@ private:
 
     void initWindow();
     void initGL();
-    void createMesh();
     void createCamera();
     void createGrid();
     void createAxis();
@@ -62,34 +66,39 @@ private:
     void processInput(float deltaTime);
     void renderFrame();
     void cleanup();
+    void setTargetOrientation(float yaw, float pitch);
+    void updateOrientation(float deltaTime);
 
-    Function2D function_;
-    std::array<float, 2> xRange_;
-    std::array<float, 2> yRange_;
+    static glm::vec3 colorFromName(const std::string& color);
+    static bool isHeatmap(const std::string& color);
 
-    int nx_ = 300;
-    int ny_ = 300;
+    float xmin = -15.0f;
+    float xmax = 15.0f;
+    float ymin = -15.0f;
+    float ymax = 15.0f;
 
-    int windowWidth_ = 800;
-    int windowHeight_ = 600;
-    std::string title_ = "Surfex";
+    int nx = 300;
+    int ny = 300;
 
-    float halfLength_ = 15.0f;
+    int windowWidth = 800;
+    int windowHeight = 600;
+    std::string title = "Surfex";
 
-    bool showAxis_ = true;
-    bool showGrid_ = true;
-    RenderMode renderMode_ = RenderMode::Solid;
-    ColorMode colorMode_ = ColorMode::Blue;
+    bool showAxis = true;
+    bool showGrid = true;
+    bool orientationAnimating = false;
+    float targetYaw = 0.0f;
+    float targetPitch = 0.0f;
 
-    GLFWwindow* window_ = nullptr;
+    GLFWwindow* window = nullptr;
 
-    Mesh mesh_;
-    Camera camera_{};
-    std::unique_ptr<Axis> axis_;
-    std::unique_ptr<Grid> grid_;
-    std::unique_ptr<Shader> surfaceShader_;
+    std::vector<Surface> surfaces;
+    Camera camera{};
+    Axis* axis = nullptr;
+    Grid* grid = nullptr;
+    Shader* surfaceShader = nullptr;
 
-    GLuint VAO_ = 0;
-    GLuint VBO_ = 0;
-    GLuint EBO_ = 0;
+    GLuint VAO = 0;
+    GLuint VBO = 0;
+    GLuint EBO = 0;
 };

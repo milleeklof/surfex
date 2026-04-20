@@ -3,7 +3,11 @@
 
 struct Grid
 {
-    Grid(float halfSize = 10.0f, float spacing = 1.0f);
+    Grid(float xmin = -10.0f,
+         float xmax = 10.0f,
+         float ymin = -10.0f,
+         float ymax = 10.0f,
+         float spacing = 1.0f);
     ~Grid();
 
     void draw(const glm::mat4& MVP) const;
@@ -14,5 +18,4 @@ private:
     unsigned int shaderProgram;
     int vertexCount;
 };
-
 

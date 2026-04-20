@@ -1,3 +1,3 @@
-from .api import Surfex, init
+from .api import Surfex, init, show
 
-__all__ = ["Surfex", "init"]
+__all__ = ["Surfex", "init", "show"]

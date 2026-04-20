@@ -2,24 +2,28 @@
 #include <vector>
 #include <glad/glad.h>
 
-static std::vector<float> generateGridVertices(float halfSize, float spacing)
+static std::vector<float> generateGridVertices(float xmin,
+                                                float xmax,
+                                                float ymin,
+                                                float ymax,
+                                                float spacing)
 {
     std::vector<float> v;
 
     const float color = 0.6f;
 
-    for (float x = -halfSize; x <= halfSize; x += spacing)
+    for (float x = xmin; x <= xmax; x += spacing)
     {
         // line parallel to Y
-        v.insert(v.end(), { x, -halfSize, 0.0f, color, color, color });
-        v.insert(v.end(), { x,  halfSize, 0.0f, color, color, color });
+        v.insert(v.end(), { x, ymin, 0.0f, color, color, color });
+        v.insert(v.end(), { x, ymax, 0.0f, color, color, color });
     }
 
-    for (float y = -halfSize; y <= halfSize; y += spacing)
+    for (float y = ymin; y <= ymax; y += spacing)
     {
         // line parallel to X
-        v.insert(v.end(), { -halfSize, y, 0.0f, color, color, color });
-        v.insert(v.end(), {  halfSize, y, 0.0f, color, color, color });
+        v.insert(v.end(), { xmin, y, 0.0f, color, color, color });
+        v.insert(v.end(), { xmax, y, 0.0f, color, color, color });
     }
 
     return v;
@@ -49,13 +53,13 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(vColor, 1.0);
+    FragColor = vec4(vColor, 0.25);
 }
 )";
 
-Grid::Grid(float halfSize, float spacing)
+Grid::Grid(float xmin, float xmax, float ymin, float ymax, float spacing)
 {
-    auto vertices = generateGridVertices(halfSize, spacing);
+    auto vertices = generateGridVertices(xmin, xmax, ymin, ymax, spacing);
     vertexCount = static_cast<int>(vertices.size() / 6);
 
     glGenVertexArrays(1, &VAO);
@@ -117,5 +121,3 @@ void Grid::draw(const glm::mat4& MVP) const
     glDrawArrays(GL_LINES, 0, vertexCount);
     glBindVertexArray(0);
 }
-
-

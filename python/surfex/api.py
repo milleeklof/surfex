@@ -1,14 +1,29 @@
 from ._core import Surfex as _Surfex
-from ._core import init as _init
+import gc
+
+
+_plots = []
 
 
 class Surfex(_Surfex):
-    """Thin Python-facing wrapper around the native Surfex class."""
+    def __init__(self, x_range, y_range):
+        super().__init__(x_range, y_range)
+        _plots.append(self)
 
 
-def init(function, x_range, y_range):
-    """Create and run a surface plot directly from Python."""
-    return _init(function, x_range, y_range)
+def init(x_range, y_range):
+    return Surfex(x_range, y_range)
 
 
-__all__ = ["Surfex", "init"]
+def show():
+    plots = list(_plots)
+    _plots.clear()
+
+    for plot in plots:
+        plot.run()
+        del plot
+        gc.collect()
+
+
+
+__all__ = ["Surfex", "init", "show"]

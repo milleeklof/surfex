@@ -3,19 +3,33 @@
 
 
 static const float axisVertices[] = {
-    // positions        // colors
+    0.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,
 
-    // X-axis (red)
-     0.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,
-     1.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,  0.0f, 1.0f, 0.0f,
 
-    // Y-axis (green)
-     0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
-     0.0f, 1.0f, 0.0f,  0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,
+    0.0f, 0.0f, 1.0f,  0.0f, 0.0f, 1.0f,
 
-    // Z-axis (blue)
-     0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,
-     0.0f, 0.0f, 1.0f,  0.0f, 0.0f, 1.0f
+    1.08f, -0.06f, 0.0f,  1.0f, 0.0f, 0.0f,
+    1.18f,  0.06f, 0.0f,  1.0f, 0.0f, 0.0f,
+    1.08f,  0.06f, 0.0f,  1.0f, 0.0f, 0.0f,
+    1.18f, -0.06f, 0.0f,  1.0f, 0.0f, 0.0f,
+
+   -0.06f, 1.18f, 0.0f,  0.0f, 1.0f, 0.0f,
+    0.00f, 1.10f, 0.0f,  0.0f, 1.0f, 0.0f,
+    0.06f, 1.18f, 0.0f,  0.0f, 1.0f, 0.0f,
+    0.00f, 1.10f, 0.0f,  0.0f, 1.0f, 0.0f,
+    0.00f, 1.10f, 0.0f,  0.0f, 1.0f, 0.0f,
+    0.00f, 1.00f, 0.0f,  0.0f, 1.0f, 0.0f,
+
+   -0.06f, 0.0f, 1.18f,  0.0f, 0.0f, 1.0f,
+    0.06f, 0.0f, 1.18f,  0.0f, 0.0f, 1.0f,
+    0.06f, 0.0f, 1.18f,  0.0f, 0.0f, 1.0f,
+   -0.06f, 0.0f, 1.02f,  0.0f, 0.0f, 1.0f,
+   -0.06f, 0.0f, 1.02f,  0.0f, 0.0f, 1.0f,
+    0.06f, 0.0f, 1.02f,  0.0f, 0.0f, 1.0f
 };
 
 static const char* axisVertexShaderSrc = R"(
@@ -48,6 +62,8 @@ void main()
 
 Axis::Axis()
 {
+    vertexCount = 22;
+
     // VAO & VBO
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -114,6 +130,6 @@ void Axis::draw(const glm::mat4& MVP) const
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_LINES, 0, 6);
+    glDrawArrays(GL_LINES, 6, vertexCount - 6);
     glBindVertexArray(0);
 }
-
