@@ -22,6 +22,7 @@ find_package(pybind11 REQUIRED)
 # GLFW
 # ======================
 find_package(glfw3 REQUIRED)
+find_package(PNG REQUIRED)
 
 # ======================
 # CORE LIBRARY
@@ -42,6 +43,7 @@ target_include_directories(surfex_core PUBLIC
 
 target_link_libraries(surfex_core
     glfw
+    PNG::PNG
 )
 
 # ======================
