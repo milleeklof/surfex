@@ -68,6 +68,7 @@ private:
     void cleanup();
     void setTargetOrientation(float yaw, float pitch);
     void updateOrientation(float deltaTime);
+    void saveScreenshot();
 
     static glm::vec3 colorFromName(const std::string& color);
     static bool isHeatmap(const std::string& color);
@@ -87,6 +88,7 @@ private:
     bool showAxis = true;
     bool showGrid = true;
     bool orientationAnimating = false;
+    bool saveScreenshotRequested = false;
     float targetYaw = 0.0f;
     float targetPitch = 0.0f;
 

@@ -2,15 +2,20 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 #include <glm/gtc/type_ptr.hpp>
+#include <png.h>
 
 namespace {
 bool hasLastWindowPosition = false;
 int lastWindowX = 0;
 int lastWindowY = 0;
+int screenshotCounter = 1;
 
 const char *vertexShaderSource = R"(
 #version 330 core
@@ -97,6 +102,58 @@ void main()
 }
 )";
 } // namespace
+
+static void writePngFile(const std::string& path,
+                         int width,
+                         int height,
+                         const std::vector<unsigned char>& pixels) {
+  FILE* file = std::fopen(path.c_str(), "wb");
+  if (!file) {
+    throw std::runtime_error("Failed to open screenshot file.");
+  }
+
+  png_structp pngPtr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+  if (!pngPtr) {
+    std::fclose(file);
+    throw std::runtime_error("Failed to create PNG writer.");
+  }
+
+  png_infop infoPtr = png_create_info_struct(pngPtr);
+  if (!infoPtr) {
+    png_destroy_write_struct(&pngPtr, nullptr);
+    std::fclose(file);
+    throw std::runtime_error("Failed to create PNG info struct.");
+  }
+
+  if (setjmp(png_jmpbuf(pngPtr))) {
+    png_destroy_write_struct(&pngPtr, &infoPtr);
+    std::fclose(file);
+    throw std::runtime_error("Failed to write PNG file.");
+  }
+
+  png_init_io(pngPtr, file);
+  png_set_IHDR(pngPtr,
+               infoPtr,
+               width,
+               height,
+               8,
+               PNG_COLOR_TYPE_RGBA,
+               PNG_INTERLACE_NONE,
+               PNG_COMPRESSION_TYPE_DEFAULT,
+               PNG_FILTER_TYPE_DEFAULT);
+  png_write_info(pngPtr, infoPtr);
+
+  std::vector<png_bytep> rows(static_cast<std::size_t>(height));
+  for (int y = 0; y < height; ++y) {
+    rows[static_cast<std::size_t>(y)] = const_cast<png_bytep>(
+        pixels.data() + static_cast<std::size_t>(height - 1 - y) * static_cast<std::size_t>(width) * 4);
+  }
+
+  png_write_image(pngPtr, rows.data());
+  png_write_end(pngPtr, nullptr);
+  png_destroy_write_struct(&pngPtr, &infoPtr);
+  std::fclose(file);
+}
 
 glm::vec3 Surfex::colorFromName(const std::string& color) {
   if (color == "red") {
@@ -194,14 +251,43 @@ void Surfex::updateOrientation(float deltaTime) {
   }
 }
 
+void Surfex::saveScreenshot() {
+  std::filesystem::create_directories("screenshots");
+
+  int width = 0;
+  int height = 0;
+  glfwGetFramebufferSize(window, &width, &height);
+  if (width <= 0 || height <= 0) {
+    throw std::runtime_error("Invalid framebuffer size for screenshot.");
+  }
+
+  std::vector<unsigned char> pixels(static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 4);
+
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glReadBuffer(GL_BACK);
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+  char filename[256];
+  std::snprintf(filename, sizeof(filename), "screenshots/surfex_%04d.png", screenshotCounter++);
+
+  writePngFile(filename, width, height, pixels);
+}
+
 void Surfex::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  (void)window;
-  (void)key;
   (void)scancode;
   (void)mods;
 
   if (action != GLFW_PRESS) {
     return;
+  }
+
+  Surfex* self = static_cast<Surfex*>(glfwGetWindowUserPointer(window));
+  if (!self) {
+    return;
+  }
+
+  if (key == GLFW_KEY_P) {
+    self->saveScreenshotRequested = true;
   }
 }
 
@@ -398,6 +484,11 @@ void Surfex::renderFrame() {
 
   if (showGrid && grid) {
     grid->draw(MVP);
+  }
+
+  if (saveScreenshotRequested) {
+    saveScreenshotRequested = false;
+    saveScreenshot();
   }
 
   glBindVertexArray(0);
