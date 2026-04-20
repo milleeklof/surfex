@@ -33,7 +33,10 @@ import math as m
 
 def ripple(x, y):
     r = (x * x + y * y) ** 0.5
-    return 1.0 if r == 0.0 else m.sin(r) / r
+    if r == 0.0:
+      return 1.0
+    else:
+      return m.sin(r)/r
 
 def saddle(x, y):
     return 0.35 * (x * x - y * y)
