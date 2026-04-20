@@ -3,25 +3,30 @@ import math as m
 import surfex as sx
 
 
-def f(x, y):
-    return 3.0 * x * y / (1.0 + x * x + y * y)
+def ripple(x, y):
+    r = (x * x + y * y) ** 0.5
+    if r == 0.0:
+        return 1.0
+    return m.sin(r) / r
 
 
-def g(x, y):
-    return m.sin(x ** 2 + y ** 2) / (x ** 2 + y ** 2)
+def saddle(x, y):
+    return 0.35 * (x * x - y * y)
 
 
-def h(x, y):
-    return x + y
+def wave(x, y):
+    return 0.6 * m.sin(x) * m.cos(y)
 
 
 if __name__ == "__main__":
-    plot1 = sx.init([-5.0, 5.0], [-5.0, 5.0])
-    surf1 = plot1.add(f, color="blue", alpha=1.0)
-    surf2 = plot1.add(g, color="heatmap", alpha=0.5)
+    plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0])
+    plot1.add(ripple, color="heatmap", alpha=1.0)
 
-    plot2 = sx.init([-5.0, 5.0], [-5.0, 5.0])
-    surf3 = plot2.add(h, color="red", alpha=1.0)
+    plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0])
+    plot2.add(saddle, color="blue", alpha=1.0)
+
+    plot3 = sx.init([-6.0, 6.0], [-6.0, 6.0])
+    plot3.add(wave, color="green", alpha=1.0)
 
     sx.show()
 
