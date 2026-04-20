@@ -13,8 +13,9 @@ Surfex is a small OpenGL surface explorer for plotting two-variable functions in
 It is built for quick visual inspection of mathematical surfaces, with support for multiple plots, optional heatmap coloring, and simple keyboard camera control.
 
 <p align="center">
-  <img src="images/sinc(r).png" width="45%" />
-  <img src="images/cosrsinr.png" width="45%" />
+  <img src="screenshots/surfex_0001.png" width="32%" />
+  <img src="screenshots/surfex_0002.png" width="32%" />
+  <img src="screenshots/surfex_0003.png" width="32%" />
 </p>
 
 ## Overview
@@ -60,6 +61,7 @@ sx.show()
 - `W`: zoom in
 - `S`: zoom out
 - `X`, `Y`, `Z`: snap toward standard views with a short animation
+- `P`: save a PNG screenshot to `screenshots/`
 - `Q`: close the current window
 
 ## Screenshots
