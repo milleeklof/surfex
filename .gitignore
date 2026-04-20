@@ -19,5 +19,12 @@ Makefile
 *.exe
 *.so
 
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Generated screenshots
+screenshots/
+
 # Random
 backup_main
