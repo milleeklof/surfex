@@ -1,4 +1,13 @@
 # Surfex
+
+<p align="center">
+  <a href="#overview">Overview</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#usage">Usage</a> ·
+  <a href="#controls">Controls</a> ·
+  <a href="#clone-and-build">Clone and Build</a>
+</p>
+
 Surfex is a small OpenGL surface explorer for plotting two-variable functions in Python.
 
 It is built for quick visual inspection of mathematical surfaces, with support for multiple plots, optional heatmap coloring, and simple keyboard camera control.
@@ -8,7 +17,7 @@ It is built for quick visual inspection of mathematical surfaces, with support f
   <img src="images/cosrsinr.png" width="45%" />
 </p>
 
-## What It Does
+## Overview
 
 - Plots functions of two variables as 3D surfaces
 - Supports multiple windows shown in sequence
@@ -20,12 +29,22 @@ It is built for quick visual inspection of mathematical surfaces, with support f
 
 ```python
 import surfex as sx
+import math as m
 
-def f(x, y):
-    return x + y
+def ripple(x, y):
+    r = (x * x + y * y) ** 0.5
+    return 1.0 if r == 0.0 else m.sin(r) / r
 
-plot = sx.init([-5.0, 5.0], [-5.0, 5.0])
-plot.add(f, color="blue", alpha=1.0)
+def saddle(x, y):
+    return 0.35 * (x * x - y * y)
+
+plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0])
+plot1.add(ripple, color="heatmap", alpha=1.0)
+plot1.add(saddle, color="blue", alpha=0.6)
+
+plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0])
+plot2.add(saddle, color="red", alpha=1.0)
+
 sx.show()
 ```
 
