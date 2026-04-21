@@ -20,7 +20,7 @@ def wave(x, y):
 
 if __name__ == "__main__":
     plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0])
-    plot1.add(ripple, color="heatmap", alpha=1.0)
+    plot1.add(ripple, [0.0, 8.0], [0.0, 8.0], color="heatmap", alpha=1.0)
 
     plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0])
     plot2.add(saddle, color="blue", alpha=1.0)
