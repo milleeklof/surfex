@@ -13,6 +13,8 @@
 - [ ] Add a vector field visualizer
 - [ ] Add so that the standard python colors are passed, so that it can use super many colors, and also pass them as 'r' for 'red'
 - [ ] See what it takes to make a iterative time-solver so that it can do functions of time as well
+- [ ] See what you have to do to make the .so file go where it is the best. Where are libraries located? Should we do ./configure?
+- [ ] Write tests and have the consumer run them
 
 NAME IDEAS
 - Surfex (Surface explorer)
