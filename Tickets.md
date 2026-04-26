@@ -15,6 +15,8 @@
 - [ ] See what it takes to make a iterative time-solver so that it can do functions of time as well
 - [ ] See what you have to do to make the .so file go where it is the best. Where are libraries located? Should we do ./configure?
 - [ ] Write tests and have the consumer run them
+- [ ] See what you have to do in terms of making it public. Do you clone it, release that one and call this surfex-dev?
+- [ ] Make it so that you can add numbers, it could be an argument like "numbers=false"
 
 NAME IDEAS
 - Surfex (Surface explorer)
