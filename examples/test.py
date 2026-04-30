@@ -28,13 +28,13 @@ if __name__ == "__main__":
     plot1.add(ripple, [0.0, 8.0], [0.0, 8.0], color="heatmap", alpha=1.0)
 
     plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0])
-    plot2.add(saddle, color="blue", alpha=1.0)
+    plot2.add(saddle, color="saddlebrown", alpha=1.0)
 
     plot3 = sx.init([-6.0, 6.0], [-6.0, 6.0])
-    plot3.add(wave, color="green", alpha=1.0)
+    plot3.add(wave, color="limegreen", alpha=1.0)
 
     plot4 = sx.init([0, 5], [0, 5])
-    plot4.add(f)
+    plot4.add(f, color="r")
 
     sx.show()
 
