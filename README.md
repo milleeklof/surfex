@@ -2,15 +2,19 @@
 
 <p align="center">
   <a href="#overview">Overview</a> ·
+  <a href="#requirements">Requirements</a> ·
+  <a href="#architecture">Architecture</a> ·
   <a href="#screenshots">Screenshots</a> ·
   <a href="#usage">Usage</a> ·
   <a href="#controls">Controls</a> ·
-  <a href="#clone-and-build">Clone and Build</a>
+  <a href="#clone-and-build">Clone and Build</a> ·
+  <a href="#development">Development</a> ·
+  <a href="#license">License</a>
 </p>
 
-Surfex is a small, declarative surface explorer for plotting two-variable functions in Python.
+Surfex is a small surface-plotting library for two-variable functions in Python.
 
-It is a C++-accelerated Python library, built from first principles in OpenGL and C++, for quick visual inspection of mathematical surfaces, with support for multiple plots, optional heatmap coloring, and simple keyboard camera control.
+It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive inspection of mathematical surfaces.
 
 <p align="center">
   <img src="screenshots/surfex_0001.png" width="32%" />
@@ -25,6 +29,22 @@ It is a C++-accelerated Python library, built from first principles in OpenGL an
 - Supports solid color and heatmap rendering
 - Includes orbit-style camera controls
 - Exposes a Python API for interactive use
+
+## Requirements
+
+- Python 3.10+
+- CMake 3.20+
+- A C++20 compiler
+- OpenGL, GLFW, and libpng development packages
+- `pybind11` in the same Python environment used for the build
+
+## Architecture
+
+- `src/` contains the native renderer and pybind11 bindings
+- `include/` contains the native headers
+- `python/surfex/` contains the installable Python package
+- `python/surfex/shaders/` contains runtime shader assets installed alongside the package and loaded relative to `surfex._core`
+- The compiled extension is installed as `surfex/_core*.so`
 
 ## Usage
 
@@ -66,26 +86,62 @@ sx.show()
 
 ## Screenshots
 
-Add more images here as the project evolves.
+Add more screenshots here as the project evolves.
 
 
 ## Clone and Build
 
-The library is made using CMake. To download, do
+Surfex is installed from source with CMake. CMake uses the Python interpreter you pass in `Python_EXECUTABLE` to locate headers, pybind11, and the correct `site-packages` directory.
+
+### macOS
+
+```bash
+brew install cmake glfw libpng pybind11
+git clone ...
+cd surfex
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip pybind11
+
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
+cmake --build build
+cmake --install build
+```
+
+### Linux
+
+Install `cmake`, `glfw`, and `libpng` with your package manager if they are not already present.
 
 ```bash
 git clone ...
 cd surfex
 
-mkdir build
-cd build
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip pybind11
 
-cmake ..
-make
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
+cmake --build build
+cmake --install build
 ```
 
-## Notes
+After installation, this should work without `PYTHONPATH`:
 
-- The Python package lives under `python/surfex`
-- The native renderer lives in `src/` and `include/`
-- The project uses GLFW, GLAD, GLM, and pybind11
+```python
+import surfex
+```
+
+## Development
+
+- Use `cmake -S . -B build -DPython_EXECUTABLE="$(which python)"` to configure against the active environment
+- Use `cmake --build build` for incremental builds
+- Use `cmake --install build` to install into the selected Python environment
+- Optional developer toggles are `-DSURFEX_ENABLE_WARNINGS=ON` and `-DSURFEX_ENABLE_SANITIZERS=ON` with a Debug build
+- The example script can be run after install with `python examples/example.py`
+
+## License
+
+BSD-3-Clause is the best default for a scientific/OpenGL library like this: permissive, widely used in research software, and compatible with closed or open downstream use.
+
+MIT is simpler but slightly less explicit about endorsement/no-warranty language. GPL is stronger copyleft and reduces adoption for some downstream users.
