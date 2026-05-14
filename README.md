@@ -74,16 +74,14 @@ Add more images here as the project evolves.
 The library is made using CMake. To download, do
 
 ```bash
-```
 git clone ...
 cd surfex
 
-mkdir Build
-cd Build
+mkdir build
+cd build
 
 cmake ..
 make
-```
 ```
 
 ## Notes
