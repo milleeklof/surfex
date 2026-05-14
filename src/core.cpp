@@ -1,5 +1,6 @@
 #include <array>
 #include <functional>
+#include <filesystem>
 #include <string>
 
 #include <pybind11/functional.h>
@@ -13,6 +14,11 @@ namespace py = pybind11;
 PYBIND11_MODULE(_core, m)
 {
     m.doc() = "Core bindings for Surfex";
+
+    const std::filesystem::path packageDir =
+        std::filesystem::path(py::cast<std::string>(m.attr("__file__")))
+            .parent_path();
+    m.attr("_package_dir") = packageDir.string();
 
     py::class_<Surfex::Surface>(m, "Surface")
         .def_readonly("color", &Surfex::Surface::color)

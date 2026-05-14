@@ -3,14 +3,19 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <fstream>
 #include <filesystem>
 #include <iostream>
+#include <iterator>
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
 
 #include <glm/gtc/type_ptr.hpp>
+#include <pybind11/pybind11.h>
 #include <png.h>
+
+namespace py = pybind11;
 
 namespace {
 bool hasLastWindowPosition = false;
@@ -122,90 +127,29 @@ glm::vec3 parseColorSpec(const std::string &color) {
   return glm::vec3(0.2f, 0.6f, 1.0f);
 }
 
-const char *vertexShaderSource = R"(
-#version 330 core
-
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-
-uniform mat4 MVP;
-uniform mat4 model;
-
-out vec3 vNormal;
-out float vHeight;
-
-void main()
-{
-    vNormal = mat3(transpose(inverse(model))) * aNormal;
-    vHeight = aPos.z;
-
-    gl_Position = MVP * vec4(aPos, 1.0);
-}
-)";
-
-const char *fragmentShaderSource = R"(
-#version 330 core
-
-uniform float minZ;
-uniform float maxZ;
-
-in vec3 vNormal;
-in float vHeight;
-
-out vec4 FragColor;
-
-uniform vec3 lightDir;
-uniform vec3 baseColor;
-uniform int renderMode;
-uniform float alpha;
-
-vec3 heatmap(float t)
-{
-    t = clamp(t, 0.0, 1.0);
-
-    vec3 c1 = vec3(0.0, 0.0, 0.5);
-    vec3 c2 = vec3(0.0, 0.0, 1.0);
-    vec3 c3 = vec3(0.0, 1.0, 0.0);
-    vec3 c4 = vec3(1.0, 1.0, 0.0);
-    vec3 c5 = vec3(1.0, 0.0, 0.0);
-
-    if (t < 0.25)
-        return mix(c1, c2, t / 0.25);
-    else if (t < 0.5)
-        return mix(c2, c3, (t - 0.25) / 0.25);
-    else if (t < 0.75)
-        return mix(c3, c4, (t - 0.5) / 0.25);
-    else
-        return mix(c4, c5, (t - 0.75) / 0.25);
+std::filesystem::path packageDir() {
+  py::gil_scoped_acquire gil;
+  static const std::filesystem::path dir = []() {
+    py::module_ core = py::module_::import("surfex._core");
+    return std::filesystem::path(py::cast<std::string>(core.attr("_package_dir")));
+  }();
+  return dir;
 }
 
-void main()
-{
-    vec3 n = normalize(vNormal);
-    vec3 l = normalize(lightDir);
+std::string readTextFile(const std::filesystem::path &path) {
+  std::ifstream file(path);
+  if (!file) {
+    throw std::runtime_error("Failed to open resource file: " + path.string());
+  }
 
-    float diff = max(dot(n, l), 0.0);
-
-    vec3 color;
-
-    if (renderMode == 0)
-    {
-        color = baseColor;
-    }
-    else
-    {
-        float range = max(maxZ - minZ, 0.0001);
-        float normalizedHeight = (vHeight - minZ) / range;
-        normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
-        color = heatmap(normalizedHeight);
-    }
-
-    vec3 ambient = 0.2 * color;
-    vec3 diffuse = diff * color;
-
-    FragColor = vec4(ambient + diffuse, alpha);
+  return std::string(std::istreambuf_iterator<char>(file),
+                     std::istreambuf_iterator<char>());
 }
-)";
+
+std::string loadShaderText(const std::string &relativePath) {
+  const std::filesystem::path path = packageDir() / "shaders" / relativePath;
+  return readTextFile(path);
+}
 } // namespace
 
 static void writePngFile(const std::string &path, int width, int height,
@@ -418,7 +362,10 @@ void Surfex::initGL() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-  this->surfaceShader = new Shader(vertexShaderSource, fragmentShaderSource);
+  const std::string vertexShaderSource = loadShaderText("surface.vert");
+  const std::string fragmentShaderSource = loadShaderText("surface.frag");
+  this->surfaceShader = new Shader(vertexShaderSource.c_str(),
+                                   fragmentShaderSource.c_str());
 }
 
 void Surfex::createCamera() {

@@ -99,8 +99,4 @@ private:
     Axis* axis = nullptr;
     Grid* grid = nullptr;
     Shader* surfaceShader = nullptr;
-
-    GLuint VAO = 0;
-    GLuint VBO = 0;
-    GLuint EBO = 0;
 };
