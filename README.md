@@ -71,7 +71,20 @@ Add more images here as the project evolves.
 
 ## Clone and Build
 
-_To be filled in._
+The library is made using CMake. To download, do
+```bash
+```
+
+git clone ...
+cd surfex
+
+mkdir Build
+cd Build
+
+cmake ..
+make
+```
+```
 
 ## Notes
 
