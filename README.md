@@ -8,7 +8,6 @@
   <a href="#usage">Usage</a> ·
   <a href="#controls">Controls</a> ·
   <a href="#clone-and-build">Clone and Build</a> ·
-  <a href="#development">Development</a> ·
   <a href="#license">License</a>
 </p>
 
@@ -67,7 +66,7 @@ Notes:
 - Multiple plots are shown one after another.
 - One plot can contain one function or many functions.
 
-## Usage
+## Example
 
 ```python
 import math as m
@@ -103,6 +102,8 @@ if __name__ == "__main__":
 
     sx.show()
 ```
+
+- The example script can be run after install with `python examples/test.py`
 
 ## Controls
 
@@ -229,16 +230,6 @@ python scripts/check_surfex_install.py
 ```bash
 python -m unittest discover -s tests
 ```
-
-## Development
-
-- Use `cmake -S . -B build -DPython_EXECUTABLE="$(which python)"` to configure against the active environment
-- Use `cmake --build build` for incremental builds
-- Use `cmake --install build` to install into the selected Python environment
-- `tests/` contains automated smoke tests; `scripts/` contains manual helpers
-- See the `Verify` section for post-install checks
-- Optional developer toggles are `-DSURFEX_ENABLE_WARNINGS=ON` and `-DSURFEX_ENABLE_SANITIZERS=ON` with a Debug build
-- The example script can be run after install with `python examples/test.py`
 
 ## License
 
