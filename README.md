@@ -143,10 +143,6 @@ cmake --install build
 
 Install `cmake`, `glfw`, and `libpng` with your package manager if they are not already present.
 
-#### Dependencies
-
-Use your package manager to install the native dependencies before building.
-
 Clone the repository with HTTPS or SSH.
 
 #### HTTPS
