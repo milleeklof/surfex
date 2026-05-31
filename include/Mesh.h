@@ -1,16 +1,20 @@
 #pragma once
-#include <vector>
-#include <functional>
 
+#include <cstddef>
+#include <functional>
+#include <vector>
 
 // A Mesh consists of vertices and indices
-struct Mesh
-{
-    std::vector<float> vertices;
-    std::vector<unsigned int> indices;
+struct Mesh {
+  std::vector<float> vertices;
+  std::vector<unsigned int> indices;
 
-    float minZ;
-    float maxZ;
+  float minZ;
+  float maxZ;
+
+  std::size_t subdivisions = 0;
+  int maxDepth = 0;
+  double generationMs = 0.0;
 };
 
 Mesh generateSurfaceMesh(
