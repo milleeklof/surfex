@@ -11,10 +11,6 @@ struct Mesh {
 
   float minZ;
   float maxZ;
-
-  std::size_t subdivisions = 0;
-  int maxDepth = 0;
-  double generationMs = 0.0;
 };
 
 Mesh generateSurfaceMesh(

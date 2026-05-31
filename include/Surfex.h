@@ -25,7 +25,6 @@ public:
     std::string functionName;
     std::string color;
     float alpha = 1.0f;
-    std::size_t subdivisions = 0;
     double generationMs = 0.0;
     GLuint VAO = 0;
     GLuint VBO = 0;

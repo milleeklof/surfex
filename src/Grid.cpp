@@ -1,4 +1,5 @@
 #include "Grid.h"
+#include "OpenGLUtils.h"
 #include <vector>
 #include <glad/glad.h>
 
@@ -30,7 +31,7 @@ static std::vector<float> generateGridVertices(float xmin,
 }
 
 
-// använd samma shader som Axis (kan kopieras)
+// Grid uses the same simple color shader as Axis.
 static const char* gridVertexShaderSrc = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
@@ -65,40 +66,36 @@ Grid::Grid(float xmin, float xmax, float ymin, float ymax, float spacing)
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        vertices.size() * sizeof(float),
-        vertices.data(),
-        GL_STATIC_DRAW
-    );
+    try {
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float),
+                     vertices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                              (void *)0);
+        glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
-                          (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                              (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
 
-    // compile shaders
-    unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &gridVertexShaderSrc, nullptr);
-    glCompileShader(vs);
-
-    unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &gridFragmentShaderSrc, nullptr);
-    glCompileShader(fs);
-
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vs);
-    glAttachShader(shaderProgram, fs);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+        const unsigned int vs =
+            compileShaderOrThrow(GL_VERTEX_SHADER, gridVertexShaderSrc,
+                                 "Grid vertex");
+        const unsigned int fs =
+            compileShaderOrThrow(GL_FRAGMENT_SHADER, gridFragmentShaderSrc,
+                                 "Grid fragment");
+        shaderProgram = linkProgramOrThrow(vs, fs, "Grid");
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+    } catch (...) {
+        glDeleteBuffers(1, &VBO);
+        glDeleteVertexArrays(1, &VAO);
+        throw;
+    }
 }
 
 Grid::~Grid()

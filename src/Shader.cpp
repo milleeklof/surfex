@@ -1,46 +1,24 @@
 #include "Shader.h"
 
+#include "OpenGLUtils.h"
+
 #include <glad/glad.h>
-#include <iostream>
 
 
-
-static unsigned int compileShader(unsigned int type, const char* source)
-{
-    unsigned int shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, nullptr);
-    glCompileShader(shader);
-
-    int success;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-    if (!success)
-    {
-        char infoLog[512];
-        glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-        std::cerr << "Shader compilation error:\n" << infoLog << std::endl;
-    }
-
-    return shader;
-}
 
 Shader::Shader(const char* vertexSrc, const char* fragmentSrc)
 {
-    unsigned int vertexShader   = compileShader(GL_VERTEX_SHADER, vertexSrc);
-    unsigned int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSrc);
+    const unsigned int vertexShader =
+        compileShaderOrThrow(GL_VERTEX_SHADER, vertexSrc, "Vertex");
+    const unsigned int fragmentShader =
+        compileShaderOrThrow(GL_FRAGMENT_SHADER, fragmentSrc, "Fragment");
 
-    programID = glCreateProgram();
-    glAttachShader(programID, vertexShader);
-    glAttachShader(programID, fragmentShader);
-    glLinkProgram(programID);
-
-    int success;
-    glGetProgramiv(programID, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        char infoLog[512];
-        glGetProgramInfoLog(programID, 512, nullptr, infoLog);
-        std::cerr << "Shader linking error:\n" << infoLog << std::endl;
+    try {
+        programID = linkProgramOrThrow(vertexShader, fragmentShader, "Program");
+    } catch (...) {
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+        throw;
     }
 
     glDeleteShader(vertexShader);
@@ -80,6 +58,5 @@ void Shader::setFloat(const std::string& name, float value) const
 {
     glUniform1f(glGetUniformLocation(programID, name.c_str()), value);
 }
-
 
 

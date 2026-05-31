@@ -1,4 +1,5 @@
 #include "Axis.h"
+#include "OpenGLUtils.h"
 #include <glad/glad.h>
 
 
@@ -68,49 +69,38 @@ Axis::Axis()
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        sizeof(axisVertices),
-        axisVertices,
-        GL_STATIC_DRAW
-    );
+    try {
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(axisVertices), axisVertices,
+                     GL_STATIC_DRAW);
 
-    // position
-    glVertexAttribPointer(
-        0, 3, GL_FLOAT, GL_FALSE,
-        6 * sizeof(float),
-        (void*)0
-    );
-    glEnableVertexAttribArray(0);
+        // position
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                              (void *)0);
+        glEnableVertexAttribArray(0);
 
-    // color
-    glVertexAttribPointer(
-        1, 3, GL_FLOAT, GL_FALSE,
-        6 * sizeof(float),
-        (void*)(3 * sizeof(float))
-    );
-    glEnableVertexAttribArray(1);
+        // color
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                              (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
 
-    // compile shaders
-    unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &axisVertexShaderSrc, nullptr);
-    glCompileShader(vs);
-
-    unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &axisFragmentShaderSrc, nullptr);
-    glCompileShader(fs);
-
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vs);
-    glAttachShader(shaderProgram, fs);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+        const unsigned int vs =
+            compileShaderOrThrow(GL_VERTEX_SHADER, axisVertexShaderSrc,
+                                 "Axis vertex");
+        const unsigned int fs =
+            compileShaderOrThrow(GL_FRAGMENT_SHADER, axisFragmentShaderSrc,
+                                 "Axis fragment");
+        shaderProgram = linkProgramOrThrow(vs, fs, "Axis");
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+    } catch (...) {
+        glDeleteBuffers(1, &VBO);
+        glDeleteVertexArrays(1, &VAO);
+        throw;
+    }
 }
 
 Axis::~Axis()

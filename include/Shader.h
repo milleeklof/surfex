@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include<string>
+#include <string>
 
 
 struct Shader

@@ -48,6 +48,7 @@ find_package(pybind11 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(PNG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
 if(TARGET glfw)
   set(SURFEX_GLFW_TARGET glfw)
@@ -55,6 +56,14 @@ elseif(TARGET glfw3::glfw)
   set(SURFEX_GLFW_TARGET glfw3::glfw)
 else()
   message(FATAL_ERROR "glfw3 package did not provide a known imported target")
+endif()
+
+if(TARGET glm::glm)
+  set(SURFEX_GLM_TARGET glm::glm)
+elseif(TARGET glm::glm-header-only)
+  set(SURFEX_GLM_TARGET glm::glm-header-only)
+else()
+  message(FATAL_ERROR "glm package did not provide a known imported target")
 endif()
 
 # ----------------------------------------------------------------------------
@@ -103,6 +112,7 @@ add_library(surfex_core STATIC
   src/Axis.cpp
   src/Grid.cpp
   src/Surfex.cpp
+  src/OpenGLUtils.cpp
   src/glad.c
 )
 
@@ -123,6 +133,7 @@ target_link_libraries(surfex_core
     Python::Module
     pybind11::headers
     OpenGL::GL
+    ${SURFEX_GLM_TARGET}
     ${SURFEX_GLFW_TARGET}
     PNG::PNG
 )

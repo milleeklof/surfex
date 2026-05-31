@@ -265,7 +265,6 @@ Surfex::Surface Surfex::addNamed(Function2D func, std::array<float, 2> xRange,
   const auto end = std::chrono::steady_clock::now();
   surface.color = color;
   surface.alpha = alpha;
-  surface.subdivisions = surface.mesh.subdivisions;
   surface.generationMs =
       std::chrono::duration_cast<std::chrono::microseconds>(end - start)
           .count() /
@@ -355,6 +354,9 @@ void Surfex::initWindow() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+#endif
 
   this->window = glfwCreateWindow(windowWidth, windowHeight, title.c_str(),
                                   nullptr, nullptr);

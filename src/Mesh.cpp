@@ -60,9 +60,5 @@ Mesh generateSurfaceMesh(std::function<float(float, float)> f, float xmin,
     }
   }
 
-  mesh.subdivisions = static_cast<std::size_t>(Nx) * static_cast<std::size_t>(Ny);
-  mesh.maxDepth = 0;
-  mesh.generationMs = 0.0;
-
   return mesh;
 }

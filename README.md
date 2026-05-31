@@ -39,7 +39,7 @@ Surfex uses a fixed `nx × ny` sampling grid, which keeps plotting predictable a
 - Python 3.10+
 - CMake 3.20+
 - A C++20 compiler
-- OpenGL, GLFW, and libpng development packages
+- OpenGL, GLFW, GLM, and libpng development packages
 - `pybind11` in the same Python environment used for the build
 
 ## Architecture
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 - `W`: zoom in
 - `S`: zoom out
 - `X`, `Y`, `Z`: snap toward standard views with a short animation
-- `P`: save a PNG screenshot to `screenshots/`
+- `P`: save a PNG screenshot to `captures/`
 - `Q`: close the current window
 
 
@@ -129,7 +129,7 @@ Install the native dependencies first.
 #### Dependencies
 
 ```bash
-brew install cmake glfw libpng pybind11
+brew install cmake glfw glm libpng pybind11
 ```
 
 Clone the repository with HTTPS or SSH.
@@ -170,7 +170,7 @@ cmake --install build
 
 ### Linux
 
-Install `cmake`, `glfw`, and `libpng` with your package manager if they are not already present.
+Install `cmake`, `glfw`, `glm`, and `libpng` with your package manager if they are not already present.
 
 Clone the repository with HTTPS or SSH.
 
@@ -214,14 +214,31 @@ After installation, this should work without `PYTHONPATH`:
 import surfex
 ```
 
+## Verify
+
+After building and installing, you can check two things:
+
+1. Which Python environment has Surfex installed:
+
+```bash
+python scripts/check_surfex_install.py
+```
+
+2. Whether the basic Python API smoke test passes:
+
+```bash
+python -m unittest discover -s tests
+```
+
 ## Development
 
 - Use `cmake -S . -B build -DPython_EXECUTABLE="$(which python)"` to configure against the active environment
 - Use `cmake --build build` for incremental builds
 - Use `cmake --install build` to install into the selected Python environment
-- Run `python scripts/check_surfex_install.py` to see which Python interpreters on your PATH can import Surfex
+- `tests/` contains automated smoke tests; `scripts/` contains manual helpers
+- See the `Verify` section for post-install checks
 - Optional developer toggles are `-DSURFEX_ENABLE_WARNINGS=ON` and `-DSURFEX_ENABLE_SANITIZERS=ON` with a Debug build
-- The example script can be run after install with `python examples/example.py`
+- The example script can be run after install with `python examples/test.py`
 
 ## License
 
