@@ -95,15 +95,45 @@ Surfex is installed from source with CMake. CMake uses the Python interpreter yo
 
 ### macOS
 
+Install the native dependencies first.
+
+#### Dependencies
+
 ```bash
 brew install cmake glfw libpng pybind11
- git clone https://github.com/milleeklof/surfex.git
-cd surfex
+```
 
+Clone the repository with HTTPS or SSH.
+
+#### HTTPS
+
+```bash
+git clone https://github.com/milleeklof/surfex.git
+cd surfex
+```
+
+#### SSH
+
+```bash
+git clone git@github.com:milleeklof/surfex.git
+cd surfex
+```
+
+Create and activate a Python environment, then install `pybind11` into it.
+
+#### Python
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip pybind11
+```
 
+Configure, build, and install Surfex into that environment.
+
+#### Build
+
+```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
 cmake --build build
 cmake --install build
@@ -113,14 +143,41 @@ cmake --install build
 
 Install `cmake`, `glfw`, and `libpng` with your package manager if they are not already present.
 
-```bash
- git clone https://github.com/milleeklof/surfex.git
-cd surfex
+#### Dependencies
 
+Use your package manager to install the native dependencies before building.
+
+Clone the repository with HTTPS or SSH.
+
+#### HTTPS
+
+```bash
+git clone https://github.com/milleeklof/surfex.git
+cd surfex
+```
+
+#### SSH
+
+```bash
+git clone git@github.com:milleeklof/surfex.git
+cd surfex
+```
+
+Create and activate a Python environment, then install `pybind11` into it.
+
+#### Python
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip pybind11
+```
 
+Configure, build, and install Surfex into that environment.
+
+#### Build
+
+```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
 cmake --build build
 cmake --install build
