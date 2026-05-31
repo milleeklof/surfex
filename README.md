@@ -4,7 +4,6 @@
   <a href="#overview">Overview</a> ·
   <a href="#requirements">Requirements</a> ·
   <a href="#architecture">Architecture</a> ·
-  <a href="#screenshots">Screenshots</a> ·
   <a href="#usage">Usage</a> ·
   <a href="#controls">Controls</a> ·
   <a href="#clone-and-build">Clone and Build</a> ·
@@ -31,7 +30,7 @@ Surfex uses a fixed `nx × ny` sampling grid, which keeps plotting predictable a
 - Supports solid color and heatmap rendering
 - Includes orbit-style camera controls
 - Uses a fixed `nx × ny` grid for surface generation
-- Lets you set the grid with `sx.init(x_range, y_range, subdivisions)`
+- Lets you set the grid with `sx.init(x_range, y_range, subdivisions)` (default `500`)
 - Exposes a Python API for interactive use
 
 ## Requirements
@@ -45,6 +44,7 @@ Surfex uses a fixed `nx × ny` sampling grid, which keeps plotting predictable a
 ## Architecture
 
 - `src/` contains the native renderer and pybind11 bindings
+- `src/glad.c`, `include/glad/`, and `include/KHR/` contain the vendored/generated OpenGL loader files
 - `include/` contains the native headers
 - `python/surfex/` contains the installable Python package
 - `python/surfex/shaders/` contains runtime shader assets installed alongside the package and loaded relative to `surfex._core`
@@ -99,9 +99,6 @@ if __name__ == "__main__":
 - `P`: save a PNG screenshot to `screenshots/`
 - `Q`: close the current window
 
-## Screenshots
-
-Add more screenshots here as the project evolves.
 
 
 ## Clone and Build
@@ -205,9 +202,12 @@ import surfex
 - Use `cmake -S . -B build -DPython_EXECUTABLE="$(which python)"` to configure against the active environment
 - Use `cmake --build build` for incremental builds
 - Use `cmake --install build` to install into the selected Python environment
+- Run `python scripts/check_surfex_install.py` to see which Python interpreters on your PATH can import Surfex
 - Optional developer toggles are `-DSURFEX_ENABLE_WARNINGS=ON` and `-DSURFEX_ENABLE_SANITIZERS=ON` with a Debug build
 - The example script can be run after install with `python examples/example.py`
 
 ## License
 
 Surfex is licensed under BSD-3-Clause: permissive, low-friction, and friendly to both open and closed downstream use.
+
+Third-party notices for the vendored/generated GLAD and Khronos files are in `THIRD_PARTY_NOTICES.md`, with license texts in `LICENSES/`.
