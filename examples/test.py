@@ -4,11 +4,13 @@ import surfex as sx
 
 
 def ripple(x, y):
-    r = (x * x + y * y) ** 0.5
+    r = (100 * x * x + 100 * y * y) ** 0.5
     if r == 0.0:
         return 1.0
     return m.sin(r) / r
 
+def f(x, y):
+    return x
 
 def saddle(x, y):
     return 0.35 * (x * x - y * y)
@@ -19,13 +21,14 @@ def wave(x, y):
 
 
 if __name__ == "__main__":
-    plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0])
-    plot1.add(ripple, [0.0, 8.0], [0.0, 8.0], color="heatmap", alpha=1.0)
+    plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0], 500)
+    plot1.add(ripple, [-2.0, 8.0], [-2.0, 8.0], color="heatmap", alpha=1.0)
+    plot1.add(f, [-8.0, 8.0], [-8.0, 8.0], color="red", alpha=0.4)
 
-    plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0])
+    plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0], 500)
     plot2.add(saddle, color="saddlebrown", alpha=1.0)
 
-    plot3 = sx.init([-6.0, 6.0], [-6.0, 6.0])
+    plot3 = sx.init([-6.0, 6.0], [-6.0, 6.0], 500)
     plot3.add(wave, color="limegreen", alpha=1.0)
 
     sx.show()
