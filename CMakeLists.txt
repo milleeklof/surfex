@@ -130,12 +130,6 @@ target_link_libraries(surfex_core
 surfex_apply_warnings(surfex_core)
 
 # ----------------------------------------------------------------------------
-# Native executable
-# ----------------------------------------------------------------------------
-target_link_libraries(surfex PRIVATE surfex_core)
-surfex_apply_warnings(surfex)
-
-# ----------------------------------------------------------------------------
 # Python extension module
 # ----------------------------------------------------------------------------
 pybind11_add_module(_core src/core.cpp)
