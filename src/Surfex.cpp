@@ -305,7 +305,7 @@ void Surfex::updateOrientation(float deltaTime) {
 }
 
 void Surfex::saveScreenshot() {
-  std::filesystem::create_directories("screenshots");
+  std::filesystem::create_directories("captures");
 
   int width = 0;
   int height = 0;
@@ -322,7 +322,7 @@ void Surfex::saveScreenshot() {
   glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 
   char filename[256];
-  std::snprintf(filename, sizeof(filename), "screenshots/surfex_%04d.png",
+  std::snprintf(filename, sizeof(filename), "captures/surfex_%04d.png",
                 screenshotCounter++);
 
   writePngFile(filename, width, height, pixels);
