@@ -1,0 +1,3 @@
+src/glad.c linguist-generated=true
+include/glad/* linguist-generated=true
+include/KHR/khrplatform.h linguist-generated=true
