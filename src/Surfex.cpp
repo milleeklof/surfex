@@ -1,6 +1,7 @@
 #include "Surfex.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
@@ -258,12 +259,17 @@ Surfex::Surface Surfex::addNamed(Function2D func, std::array<float, 2> xRange,
                                  const std::string &color, float alpha) {
   Surface surface;
   surface.functionName = functionName;
+  const auto start = std::chrono::steady_clock::now();
   surface.mesh = generateSurfaceMesh(func, xRange[0], xRange[1], yRange[0],
                                      yRange[1], nx, ny);
+  const auto end = std::chrono::steady_clock::now();
   surface.color = color;
   surface.alpha = alpha;
   surface.subdivisions = surface.mesh.subdivisions;
-  surface.generationMs = surface.mesh.generationMs;
+  surface.generationMs =
+      std::chrono::duration_cast<std::chrono::microseconds>(end - start)
+          .count() /
+      1000.0;
   surfaces.push_back(surface);
   return surface;
 }
@@ -441,6 +447,8 @@ void Surfex::printSummary() const {
     return;
   }
 
+  const char *programName = "Surfex";
+
   const Surface *dominant = &surfaces.front();
   for (const Surface &surface : surfaces) {
     if (surface.subdivisions > dominant->subdivisions) {
@@ -457,15 +465,20 @@ void Surfex::printSummary() const {
     }
   }
 
-  std::cout << "=== plot (" << title << "): Function(s): ";
+  double totalMs = 0.0;
+  for (const Surface &surface : surfaces) {
+    totalMs += surface.generationMs;
+  }
+
+  std::cout << "=== plot (" << title << "): program: " << programName
+            << ", Function(s): ";
   for (std::size_t i = 0; i < names.size(); ++i) {
     if (i != 0) {
       std::cout << ", ";
     }
     std::cout << names[i];
   }
-  std::cout << ", subdivisions: " << dominant->subdivisions
-            << ", time: " << dominant->generationMs << " ms ===\n";
+  std::cout << ", calculate time: " << totalMs << " ms ===\n";
 }
 
 void Surfex::processInput(float deltaTime) {

@@ -11,6 +11,18 @@
 
 namespace py = pybind11;
 
+namespace {
+
+std::string functionNameFromPython(const py::function &function) {
+    if (py::hasattr(function, "__name__")) {
+        return py::cast<std::string>(function.attr("__name__"));
+    }
+
+    return "function";
+}
+
+} // namespace
+
 PYBIND11_MODULE(_core, m)
 {
     m.doc() = "Core bindings for Surfex";
@@ -29,18 +41,28 @@ PYBIND11_MODULE(_core, m)
              py::arg("x_range"),
              py::arg("y_range"))
         .def("add",
-             py::overload_cast<Surfex::Function2D,
-                               const std::string&,
-                               float>(&Surfex::add),
+             [](Surfex &self, py::function function, const std::string &color, float alpha) {
+                 const std::string functionName = functionNameFromPython(function);
+                 Surfex::Function2D wrapped = [function](float x, float y) {
+                     py::gil_scoped_acquire gil;
+                     return py::cast<float>(function(x, y));
+                 };
+                 return self.addNamed(std::move(wrapped), functionName, color, alpha);
+             },
              py::arg("function"),
              py::arg("color") = "blue",
              py::arg("alpha") = 1.0f)
         .def("add",
-             py::overload_cast<Surfex::Function2D,
-                               std::array<float, 2>,
-                               std::array<float, 2>,
-                               const std::string&,
-                               float>(&Surfex::add),
+             [](Surfex &self, py::function function, std::array<float, 2> xRange,
+                std::array<float, 2> yRange, const std::string &color, float alpha) {
+                 const std::string functionName = functionNameFromPython(function);
+                 Surfex::Function2D wrapped = [function](float x, float y) {
+                     py::gil_scoped_acquire gil;
+                     return py::cast<float>(function(x, y));
+                 };
+                 return self.addNamed(std::move(wrapped), xRange, yRange,
+                                      functionName, color, alpha);
+             },
              py::arg("function"),
              py::arg("x_range"),
              py::arg("y_range"),

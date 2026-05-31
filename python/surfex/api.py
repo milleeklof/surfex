@@ -6,13 +6,14 @@ _plots = []
 
 
 class Surfex(_Surfex):
-    def __init__(self, x_range, y_range):
+    def __init__(self, x_range, y_range, subdivisions=500):
         super().__init__(x_range, y_range)
+        self.set_resolution(subdivisions, subdivisions)
         _plots.append(self)
 
 
-def init(x_range, y_range):
-    return Surfex(x_range, y_range)
+def init(x_range, y_range, subdivisions=500):
+    return Surfex(x_range, y_range, subdivisions)
 
 
 def show():
