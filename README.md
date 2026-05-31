@@ -15,7 +15,6 @@ Surfex is a small surface-plotting library for two-variable functions in Python.
 
 It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive inspection of mathematical surfaces.
 
-Surfex uses a fixed `nx × ny` sampling grid, which keeps plotting predictable and fast for interactive use.
 
 <p align="center">
   <img src="screenshots/surfex_0001.png" width="32%" />
@@ -81,14 +80,12 @@ def ripple(x, y):
 def twist(x, y):
     return 0.2 * m.sin(0.6 * x * y) + 0.05 * (x * x - y * y)
 
+def saddle(x, y):
+    return 0.35 * (x * x - y * y)
+
+
 def wave(x, y):
     return 0.6 * m.sin(x) * m.cos(y)
-
-def sincy(x, y):
-    r = (100*x*x + 100*y*y)**0.5
-    if r == 0:
-        r = 1
-    return 2*m.sin(r)/r * x*y
 
 
 if __name__ == "__main__":
@@ -97,7 +94,7 @@ if __name__ == "__main__":
     plot1.add(twist, [-8.0, 8.0], [-8.0, 8.0], color="red", alpha=0.4)
 
     plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0], 500)
-    plot2.add(sincy, color="heatmap", alpha=1.0)
+    plot2.add(saddle, color="saddlebrown", alpha=1.0)
 
     plot3 = sx.init([-6.0, 6.0], [-6.0, 6.0], 500)
     plot3.add(wave, color="limegreen", alpha=1.0)
