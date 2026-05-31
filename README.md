@@ -16,6 +16,8 @@ Surfex is a small surface-plotting library for two-variable functions in Python.
 
 It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive inspection of mathematical surfaces.
 
+Surfex is optimized for smooth or moderately varying surfaces. Very fast oscillations can require heavy subdivision and may hit practical quality or performance limits.
+
 <p align="center">
   <img src="screenshots/surfex_0001.png" width="32%" />
   <img src="screenshots/surfex_0002.png" width="32%" />
@@ -28,6 +30,7 @@ It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive
 - Supports multiple windows shown in sequence
 - Supports solid color and heatmap rendering
 - Includes orbit-style camera controls
+- Supports `mode="fast"` and `mode="nice"` for adaptive mesh quality
 - Exposes a Python API for interactive use
 
 ## Requirements
@@ -48,28 +51,41 @@ It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive
 
 ## Usage
 
+Use `mode="fast"` for quick inspection and `mode="nice"` for higher-quality output and screenshots.
+
 ```python
-import surfex as sx
 import math as m
+import surfex as sx
 
 def ripple(x, y):
-    r = (x * x + y * y) ** 0.5
+    r = (100 * x * x + 100 * y * y) ** 0.5
     if r == 0.0:
-      return 1.0
-    else:
-      return m.sin(r)/r
+        return 1.0
+    return m.sin(r) / r
+
+def f(x, y):
+    return x
 
 def saddle(x, y):
     return 0.35 * (x * x - y * y)
 
-plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0])
-plot1.add(ripple, color="heatmap", alpha=1.0)
-plot1.add(saddle, color="blue", alpha=0.6)
 
-plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0])
-plot2.add(saddle, color="red", alpha=1.0)
+def wave(x, y):
+    return 0.6 * m.sin(x) * m.cos(y)
 
-sx.show()
+
+if __name__ == "__main__":
+    plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0], mode="fast")
+    plot1.add(ripple, [-2.0, 8.0], [-2.0, 8.0], color="heatmap", alpha=1.0)
+    plot1.add(f, [-8.0, 8.0], [-8.0, 8.0], color="red", alpha=0.4)
+
+    plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0], mode="nice")
+    plot2.add(saddle, color="saddlebrown", alpha=1.0)
+
+    plot3 = sx.init([-6.0, 6.0], [-6.0, 6.0], mode="nice")
+    plot3.add(wave, color="limegreen", alpha=1.0)
+
+    sx.show()
 ```
 
 ## Controls
@@ -195,6 +211,4 @@ import surfex
 
 ## License
 
-BSD-3-Clause is the best default for a scientific/OpenGL library like this: permissive, widely used in research software, and compatible with closed or open downstream use.
-
-MIT is simpler but slightly less explicit about endorsement/no-warranty language. GPL is stronger copyleft and reduces adoption for some downstream users.
+Surfex is licensed under BSD-3-Clause: permissive, low-friction, and friendly to both open and closed downstream use.
