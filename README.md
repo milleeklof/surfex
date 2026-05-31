@@ -5,7 +5,7 @@
   <a href="#requirements">Requirements</a> ·
   <a href="#architecture">Architecture</a> ·
   <a href="#workflow">Workflow</a> ·
-  <a href="#example">Example</a> ·
+  <a href="#exampe">Example</a> ·
   <a href="#controls">Controls</a> ·
   <a href="#clone-and-build">Clone and Build</a> ·
   <a href="#license">License</a>
@@ -19,8 +19,8 @@ Surfex uses a fixed `nx × ny` sampling grid, which keeps plotting predictable a
 
 <p align="center">
   <img src="screenshots/img1.png" width="32%" />
+  <img src="screenshots/img.png" width="32%" />
   <img src="screenshots/img2.png" width="32%" />
-  <img src="screenshots/img3.png" width="32%" />
 </p>
 
 ## Overview
