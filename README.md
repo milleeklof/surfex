@@ -16,7 +16,7 @@ Surfex is a small surface-plotting library for two-variable functions in Python.
 
 It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive inspection of mathematical surfaces.
 
-Surfex is optimized for smooth or moderately varying surfaces. Very fast oscillations can require heavy subdivision and may hit practical quality or performance limits.
+Surfex uses a fixed `nx × ny` sampling grid, which keeps plotting predictable and fast for interactive use.
 
 <p align="center">
   <img src="screenshots/surfex_0001.png" width="32%" />
@@ -30,7 +30,8 @@ Surfex is optimized for smooth or moderately varying surfaces. Very fast oscilla
 - Supports multiple windows shown in sequence
 - Supports solid color and heatmap rendering
 - Includes orbit-style camera controls
-- Supports `mode="fast"` and `mode="nice"` for adaptive mesh quality
+- Uses a fixed `nx × ny` grid for surface generation
+- Lets you set the grid with `sx.init(x_range, y_range, subdivisions)`
 - Exposes a Python API for interactive use
 
 ## Requirements
@@ -50,8 +51,6 @@ Surfex is optimized for smooth or moderately varying surfaces. Very fast oscilla
 - The compiled extension is installed as `surfex/_core*.so`
 
 ## Usage
-
-Use `mode="fast"` for quick inspection and `mode="nice"` for higher-quality output and screenshots.
 
 ```python
 import math as m
@@ -75,14 +74,14 @@ def wave(x, y):
 
 
 if __name__ == "__main__":
-    plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0], mode="fast")
+    plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0], 500)
     plot1.add(ripple, [-2.0, 8.0], [-2.0, 8.0], color="heatmap", alpha=1.0)
     plot1.add(f, [-8.0, 8.0], [-8.0, 8.0], color="red", alpha=0.4)
 
-    plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0], mode="nice")
+    plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0], 500)
     plot2.add(saddle, color="saddlebrown", alpha=1.0)
 
-    plot3 = sx.init([-6.0, 6.0], [-6.0, 6.0], mode="nice")
+    plot3 = sx.init([-6.0, 6.0], [-6.0, 6.0], 500)
     plot3.add(wave, color="limegreen", alpha=1.0)
 
     sx.show()
