@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
@@ -12,8 +12,8 @@
 #include <vector>
 
 #include <glm/gtc/type_ptr.hpp>
-#include <pybind11/pybind11.h>
 #include <png.h>
+#include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 
@@ -131,7 +131,8 @@ std::filesystem::path packageDir() {
   py::gil_scoped_acquire gil;
   static const std::filesystem::path dir = []() {
     py::module_ core = py::module_::import("surfex._core");
-    return std::filesystem::path(py::cast<std::string>(core.attr("_package_dir")));
+    return std::filesystem::path(
+        py::cast<std::string>(core.attr("_package_dir")));
   }();
   return dir;
 }
@@ -202,9 +203,7 @@ glm::vec3 Surfex::colorFromName(const std::string &color) {
   return parseColorSpec(color);
 }
 
-bool Surfex::isHeatmap(const std::string &color) {
-  return color == "heatmap";
-}
+bool Surfex::isHeatmap(const std::string &color) { return color == "heatmap"; }
 
 Surfex::Surfex(std::array<float, 2> xRange, std::array<float, 2> yRange) {
   this->xmin = xRange[0];
@@ -217,20 +216,13 @@ Surfex::~Surfex() { cleanup(); }
 
 Surfex::Surface Surfex::add(Function2D func, const std::string &color,
                             float alpha) {
-  return add(func, std::array<float, 2>{xmin, xmax},
-             std::array<float, 2>{ymin, ymax}, color, alpha);
+  return addNamed(func, "function", color, alpha);
 }
 
 Surfex::Surface Surfex::add(Function2D func, std::array<float, 2> xRange,
                             std::array<float, 2> yRange,
                             const std::string &color, float alpha) {
-  Surface surface;
-  surface.mesh = generateSurfaceMesh(func, xRange[0], xRange[1], yRange[0],
-                                     yRange[1], nx, ny);
-  surface.color = color;
-  surface.alpha = alpha;
-  surfaces.push_back(surface);
-  return surface;
+  return addNamed(func, xRange, yRange, "function", color, alpha);
 }
 
 void Surfex::setResolution(int nx, int ny) {
@@ -252,6 +244,29 @@ void Surfex::setWindowSize(int width, int height) {
 }
 
 void Surfex::setTitle(const std::string &title) { this->title = title; }
+
+Surfex::Surface Surfex::addNamed(Function2D func,
+                                 const std::string &functionName,
+                                 const std::string &color, float alpha) {
+  return addNamed(func, std::array<float, 2>{xmin, xmax},
+                  std::array<float, 2>{ymin, ymax}, functionName, color, alpha);
+}
+
+Surfex::Surface Surfex::addNamed(Function2D func, std::array<float, 2> xRange,
+                                 std::array<float, 2> yRange,
+                                 const std::string &functionName,
+                                 const std::string &color, float alpha) {
+  Surface surface;
+  surface.functionName = functionName;
+  surface.mesh = generateSurfaceMesh(func, xRange[0], xRange[1], yRange[0],
+                                     yRange[1], nx, ny);
+  surface.color = color;
+  surface.alpha = alpha;
+  surface.subdivisions = surface.mesh.subdivisions;
+  surface.generationMs = surface.mesh.generationMs;
+  surfaces.push_back(surface);
+  return surface;
+}
 
 void Surfex::setTargetOrientation(float yaw, float pitch) {
   this->targetYaw = yaw;
@@ -364,8 +379,8 @@ void Surfex::initGL() {
 
   const std::string vertexShaderSource = loadShaderText("surface.vert");
   const std::string fragmentShaderSource = loadShaderText("surface.frag");
-  this->surfaceShader = new Shader(vertexShaderSource.c_str(),
-                                   fragmentShaderSource.c_str());
+  this->surfaceShader =
+      new Shader(vertexShaderSource.c_str(), fragmentShaderSource.c_str());
 }
 
 void Surfex::createCamera() {
@@ -419,6 +434,38 @@ void Surfex::createBuffers() {
   }
 
   glBindVertexArray(0);
+}
+
+void Surfex::printSummary() const {
+  if (surfaces.empty()) {
+    return;
+  }
+
+  const Surface *dominant = &surfaces.front();
+  for (const Surface &surface : surfaces) {
+    if (surface.subdivisions > dominant->subdivisions) {
+      dominant = &surface;
+    }
+  }
+
+  std::vector<std::string> names;
+  names.reserve(surfaces.size());
+  for (const Surface &surface : surfaces) {
+    if (std::find(names.begin(), names.end(), surface.functionName) ==
+        names.end()) {
+      names.push_back(surface.functionName);
+    }
+  }
+
+  std::cout << "=== plot (" << title << "): Function(s): ";
+  for (std::size_t i = 0; i < names.size(); ++i) {
+    if (i != 0) {
+      std::cout << ", ";
+    }
+    std::cout << names[i];
+  }
+  std::cout << ", subdivisions: " << dominant->subdivisions
+            << ", time: " << dominant->generationMs << " ms ===\n";
 }
 
 void Surfex::processInput(float deltaTime) {
@@ -577,6 +624,7 @@ void Surfex::run() {
     createAxis();
     createGrid();
     createBuffers();
+    printSummary();
 
     float lastTime = static_cast<float>(glfwGetTime());
 
