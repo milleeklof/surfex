@@ -5,6 +5,7 @@
   <a href="#requirements">Requirements</a> ·
   <a href="#architecture">Architecture</a> ·
   <a href="#usage">Usage</a> ·
+  <a href="#workflow">Workflow</a> ·
   <a href="#controls">Controls</a> ·
   <a href="#clone-and-build">Clone and Build</a> ·
   <a href="#development">Development</a> ·
@@ -86,6 +87,22 @@ if __name__ == "__main__":
 
     sx.show()
 ```
+
+## Workflow
+
+Use this order when plotting:
+
+1. Import Surfex.
+2. Create a plot with `plot = sx.init(x_range, y_range, subdivisions)`.
+3. Add one function or several functions to that plot with ``plot.add(function)`
+4. Give each function its own range if needed.
+5. Create more plots the same way if you want multiple figures.
+6. Call `sx.show()` at the end.
+
+Notes:
+- `subdivisions` sets both the X and Y grid size.
+- Multiple plots are shown one after another.
+- One plot can contain one function or many functions.
 
 ## Controls
 
