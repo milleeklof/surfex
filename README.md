@@ -5,7 +5,7 @@
   <a href="#requirements">Requirements</a> ·
   <a href="#architecture">Architecture</a> ·
   <a href="#workflow">Workflow</a> ·
-  <a href="#exampe">Example</a> ·
+  <a href="#example">Example</a> ·
   <a href="#controls">Controls</a> ·
   <a href="#clone-and-build">Clone and Build</a> ·
   <a href="#license">License</a>
