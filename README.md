@@ -18,9 +18,9 @@ It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive
 Surfex uses a fixed `nx × ny` sampling grid, which keeps plotting predictable and fast for interactive use.
 
 <p align="center">
-  <img src="screenshots/surfex_0001.png" width="32%" />
-  <img src="screenshots/surfex_0002.png" width="32%" />
-  <img src="screenshots/surfex_0003.png" width="32%" />
+  <img src="screenshots/A.png" width="32%" />
+  <img src="screenshots/B.png" width="32%" />
+  <img src="screenshots/C.png" width="32%" />
 </p>
 
 ## Overview
