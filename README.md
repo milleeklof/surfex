@@ -97,7 +97,7 @@ Surfex is installed from source with CMake. CMake uses the Python interpreter yo
 
 ```bash
 brew install cmake glfw libpng pybind11
-git clone ...
+ git clone https://github.com/milleeklof/surfex.git
 cd surfex
 
 python3 -m venv .venv
@@ -114,7 +114,7 @@ cmake --install build
 Install `cmake`, `glfw`, and `libpng` with your package manager if they are not already present.
 
 ```bash
-git clone ...
+ git clone https://github.com/milleeklof/surfex.git
 cd surfex
 
 python3 -m venv .venv
