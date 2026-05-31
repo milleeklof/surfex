@@ -83,8 +83,8 @@ private:
   float ymin = -15.0f;
   float ymax = 15.0f;
 
-  int nx = 1000;
-  int ny = 1000;
+  int nx = 500;
+  int ny = 500;
 
   int windowWidth = 800;
   int windowHeight = 600;

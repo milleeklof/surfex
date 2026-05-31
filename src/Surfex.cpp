@@ -449,13 +449,6 @@ void Surfex::printSummary() const {
 
   const char *programName = "Surfex";
 
-  const Surface *dominant = &surfaces.front();
-  for (const Surface &surface : surfaces) {
-    if (surface.subdivisions > dominant->subdivisions) {
-      dominant = &surface;
-    }
-  }
-
   std::vector<std::string> names;
   names.reserve(surfaces.size());
   for (const Surface &surface : surfaces) {
