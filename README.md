@@ -18,9 +18,9 @@ It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive
 Surfex uses a fixed `nx × ny` sampling grid, which keeps plotting predictable and fast for interactive use.
 
 <p align="center">
-  <img src="screenshots/A.png" width="32%" />
-  <img src="screenshots/B.png" width="32%" />
-  <img src="screenshots/C.png" width="32%" />
+  <img src="screenshots/img1.png" width="32%" />
+  <img src="screenshots/img2.png" width="32%" />
+  <img src="screenshots/img3.png" width="32%" />
 </p>
 
 ## Overview
@@ -78,8 +78,8 @@ def ripple(x, y):
         return 1.0
     return m.sin(r) / r
 
-def f(x, y):
-    return x
+def twist(x, y):
+    return 0.2 * m.sin(0.6 * x * y) + 0.05 * (x * x - y * y)
 
 def saddle(x, y):
     return 0.35 * (x * x - y * y)
@@ -92,7 +92,7 @@ def wave(x, y):
 if __name__ == "__main__":
     plot1 = sx.init([-8.0, 8.0], [-8.0, 8.0], 500)
     plot1.add(ripple, [-2.0, 8.0], [-2.0, 8.0], color="heatmap", alpha=1.0)
-    plot1.add(f, [-8.0, 8.0], [-8.0, 8.0], color="red", alpha=0.4)
+    plot1.add(twist, [-8.0, 8.0], [-8.0, 8.0], color="red", alpha=0.4)
 
     plot2 = sx.init([-4.0, 4.0], [-4.0, 4.0], 500)
     plot2.add(saddle, color="saddlebrown", alpha=1.0)
