@@ -235,6 +235,6 @@ python -m unittest discover -s tests
 
 ## License
 
-Surfex is licensed under BSD-3-Clause: permissive, low-friction, and friendly to both open and closed downstream use.
+Surfex is licensed under BSD-3-Clause.
 
 Third-party notices for the vendored/generated GLAD and Khronos files are in `THIRD_PARTY_NOTICES.md`, with license texts in `LICENSES/`.
