@@ -73,7 +73,5 @@ PYBIND11_MODULE(_core, m)
         .def("set_window_size", &Surfex::setWindowSize,
              py::arg("width"),
              py::arg("height"))
-        .def("set_title", &Surfex::setTitle,
-             py::arg("title"))
-        .def("run", &Surfex::run);
+         .def("run", &Surfex::run);
 }

@@ -54,7 +54,6 @@ public:
 
   void setResolution(int n);
   void setWindowSize(int width, int height);
-  void setTitle(const std::string &title);
 
 private:
   static void keyCallback(GLFWwindow *window, int key, int scancode, int action,

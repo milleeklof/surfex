@@ -243,8 +243,6 @@ void Surfex::setWindowSize(int width, int height) {
   this->windowHeight = height;
 }
 
-void Surfex::setTitle(const std::string &title) { this->title = title; }
-
 Surfex::Surface Surfex::addNamed(Function2D func,
                                  const std::string &functionName,
                                  const std::string &color, float alpha) {
