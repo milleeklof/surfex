@@ -68,9 +68,8 @@ PYBIND11_MODULE(_core, m)
              py::arg("y_range"),
              py::arg("color") = "blue",
              py::arg("alpha") = 1.0f)
-        .def("set_resolution", &Surfex::setResolution,
-             py::arg("nx"),
-             py::arg("ny"))
+         .def("set_resolution", &Surfex::setResolution,
+              py::arg("n"))
         .def("set_window_size", &Surfex::setWindowSize,
              py::arg("width"),
              py::arg("height"))

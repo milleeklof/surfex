@@ -7,19 +7,19 @@
 #include <glm/glm.hpp>
 
 Mesh generateSurfaceMesh(std::function<float(float, float)> f, float xmin,
-                         float xmax, float ymin, float ymax, int Nx, int Ny) {
+                         float xmax, float ymin, float ymax, int n) {
   Mesh mesh;
 
-  mesh.vertices.reserve(Nx * Ny * 6);
-  mesh.indices.reserve((Nx - 1) * (Ny - 1) * 6);
+  mesh.vertices.reserve(n * n * 6);
+  mesh.indices.reserve((n - 1) * (n - 1) * 6);
 
   mesh.minZ = std::numeric_limits<float>::max();
   mesh.maxZ = -std::numeric_limits<float>::max();
 
-  for (int i = 0; i < Nx; ++i) {
-    for (int j = 0; j < Ny; ++j) {
-      const float x = xmin + i * (xmax - xmin) / (Nx - 1);
-      const float y = ymin + j * (ymax - ymin) / (Ny - 1);
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n; ++j) {
+      const float x = xmin + i * (xmax - xmin) / (n - 1);
+      const float y = ymin + j * (ymax - ymin) / (n - 1);
       const float z = f(x, y);
 
       mesh.minZ = std::min(mesh.minZ, z);
@@ -45,10 +45,10 @@ Mesh generateSurfaceMesh(std::function<float(float, float)> f, float xmin,
     }
   }
 
-  for (int j = 0; j < Ny - 1; ++j) {
-    for (int i = 0; i < Nx - 1; ++i) {
-      const int row1 = j * Nx;
-      const int row2 = (j + 1) * Nx;
+  for (int j = 0; j < n - 1; ++j) {
+    for (int i = 0; i < n - 1; ++i) {
+      const int row1 = j * n;
+      const int row2 = (j + 1) * n;
 
       mesh.indices.push_back(row1 + i);
       mesh.indices.push_back(row2 + i);

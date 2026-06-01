@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <array>
 #include <functional>
 #include <string>
@@ -25,7 +26,6 @@ public:
     std::string functionName;
     std::string color;
     float alpha = 1.0f;
-    double generationMs = 0.0;
     GLuint VAO = 0;
     GLuint VBO = 0;
     GLuint EBO = 0;
@@ -52,7 +52,7 @@ public:
 
   void run();
 
-  void setResolution(int nx, int ny);
+  void setResolution(int n);
   void setWindowSize(int width, int height);
   void setTitle(const std::string &title);
 
@@ -66,7 +66,7 @@ private:
   void createGrid();
   void createAxis();
   void createBuffers();
-  void printSummary() const;
+  void printSummary(double elapsedMs) const;
   void processInput(float deltaTime);
   void renderFrame();
   void cleanup();
@@ -82,8 +82,7 @@ private:
   float ymin = -15.0f;
   float ymax = 15.0f;
 
-  int nx = 500;
-  int ny = 500;
+  int n = 500;
 
   int windowWidth = 800;
   int windowHeight = 600;
@@ -93,8 +92,12 @@ private:
   bool showGrid = true;
   bool orientationAnimating = false;
   bool saveScreenshotRequested = false;
+  bool summaryPrinted = false;
+  bool plotTimingStarted = false;
   float targetYaw = 0.0f;
   float targetPitch = 0.0f;
+
+  std::chrono::steady_clock::time_point plotStartTime;
 
   GLFWwindow *window = nullptr;
 

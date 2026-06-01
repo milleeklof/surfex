@@ -17,5 +17,5 @@ Mesh generateSurfaceMesh(
     std::function<float(float, float)> f,
     float xmin, float xmax,
     float ymin, float ymax,
-    int Nx, int Ny
+    int n
 );

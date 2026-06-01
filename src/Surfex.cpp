@@ -1,8 +1,8 @@
 #include "Surfex.h"
 
 #include <algorithm>
-#include <chrono>
 #include <cmath>
+#include <chrono>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -226,13 +226,12 @@ Surfex::Surface Surfex::add(Function2D func, std::array<float, 2> xRange,
   return addNamed(func, xRange, yRange, "function", color, alpha);
 }
 
-void Surfex::setResolution(int nx, int ny) {
-  if (nx < 2 || ny < 2) {
-    throw std::invalid_argument("Resolution must be at least 2x2.");
+void Surfex::setResolution(int n) {
+  if (n < 2) {
+    throw std::invalid_argument("Resolution must be at least 2.");
   }
 
-  this->nx = nx;
-  this->ny = ny;
+  this->n = n;
 }
 
 void Surfex::setWindowSize(int width, int height) {
@@ -257,18 +256,17 @@ Surfex::Surface Surfex::addNamed(Function2D func, std::array<float, 2> xRange,
                                  std::array<float, 2> yRange,
                                  const std::string &functionName,
                                  const std::string &color, float alpha) {
+  if (!plotTimingStarted) {
+    plotTimingStarted = true;
+    plotStartTime = std::chrono::steady_clock::now();
+  }
+
   Surface surface;
   surface.functionName = functionName;
-  const auto start = std::chrono::steady_clock::now();
   surface.mesh = generateSurfaceMesh(func, xRange[0], xRange[1], yRange[0],
-                                     yRange[1], nx, ny);
-  const auto end = std::chrono::steady_clock::now();
+                                      yRange[1], n);
   surface.color = color;
   surface.alpha = alpha;
-  surface.generationMs =
-      std::chrono::duration_cast<std::chrono::microseconds>(end - start)
-          .count() /
-      1000.0;
   surfaces.push_back(surface);
   return surface;
 }
@@ -304,7 +302,7 @@ void Surfex::updateOrientation(float deltaTime) {
 }
 
 void Surfex::saveScreenshot() {
-  std::filesystem::create_directories("captures");
+  std::filesystem::create_directories("screenshots");
 
   int width = 0;
   int height = 0;
@@ -321,7 +319,7 @@ void Surfex::saveScreenshot() {
   glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 
   char filename[256];
-  std::snprintf(filename, sizeof(filename), "captures/surfex_%04d.png",
+  std::snprintf(filename, sizeof(filename), "screenshots/surfex_%04d.png",
                 screenshotCounter++);
 
   writePngFile(filename, width, height, pixels);
@@ -354,9 +352,6 @@ void Surfex::initWindow() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-#endif
 
   this->window = glfwCreateWindow(windowWidth, windowHeight, title.c_str(),
                                   nullptr, nullptr);
@@ -444,12 +439,10 @@ void Surfex::createBuffers() {
   glBindVertexArray(0);
 }
 
-void Surfex::printSummary() const {
+void Surfex::printSummary(double elapsedMs) const {
   if (surfaces.empty()) {
     return;
   }
-
-  const char *programName = "Surfex";
 
   std::vector<std::string> names;
   names.reserve(surfaces.size());
@@ -460,20 +453,14 @@ void Surfex::printSummary() const {
     }
   }
 
-  double totalMs = 0.0;
-  for (const Surface &surface : surfaces) {
-    totalMs += surface.generationMs;
-  }
-
-  std::cout << "=== plot (" << title << "): program: " << programName
-            << ", Function(s): ";
+  std::cout << "=== plot (" << title << "): Function(s): ";
   for (std::size_t i = 0; i < names.size(); ++i) {
     if (i != 0) {
       std::cout << ", ";
     }
     std::cout << names[i];
   }
-  std::cout << ", calculate time: " << totalMs << " ms ===\n";
+  std::cout << ", time: " << elapsedMs << " ms ===\n";
 }
 
 void Surfex::processInput(float deltaTime) {
@@ -627,13 +614,12 @@ void Surfex::cleanup() {
 void Surfex::run() {
   initWindow();
   try {
+    summaryPrinted = false;
     initGL();
     createCamera();
     createAxis();
     createGrid();
     createBuffers();
-    printSummary();
-
     float lastTime = static_cast<float>(glfwGetTime());
 
     while (!glfwWindowShouldClose(window)) {
@@ -643,6 +629,14 @@ void Surfex::run() {
 
       processInput(deltaTime);
       renderFrame();
+
+      if (!summaryPrinted && plotTimingStarted) {
+        const auto elapsed = std::chrono::steady_clock::now() - plotStartTime;
+        const double elapsedMs =
+            std::chrono::duration<double, std::milli>(elapsed).count();
+        printSummary(elapsedMs);
+        summaryPrinted = true;
+      }
     }
 
     cleanup();

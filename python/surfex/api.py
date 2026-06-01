@@ -8,7 +8,7 @@ _plots = []
 class Surfex(_Surfex):
     def __init__(self, x_range, y_range, subdivisions=500):
         super().__init__(x_range, y_range)
-        self.set_resolution(subdivisions, subdivisions)
+        self.set_resolution(subdivisions)
         _plots.append(self)
 
 
