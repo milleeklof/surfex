@@ -221,6 +221,10 @@ python scripts/check_surfex_install.py
 python -m unittest discover -s tests
 ```
 
+3. Run the example file:
+```bash
+python examples/test.py
+```
 ## License
 
 Surfex is licensed under BSD-3-Clause.
