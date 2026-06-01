@@ -133,15 +133,30 @@ Install Apple Command Line Tools if needed to get Apple `clang++`:
 xcode-select --install
 ```
 
-Then install the dependencies, clone the repository, and build:
+Install the native dependencies:
 
 ```bash
 brew install cmake glfw glm libpng pybind11
+```
+
+Clone the repository:
+
+```bash
 git clone https://github.com/milleeklof/surfex.git
 cd surfex
+```
+
+Create and activate a Python environment, then install `pybind11` into it:
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip pybind11
+```
+
+Configure, build, and install Surfex:
+
+```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
 cmake --build build
 cmake --install build
@@ -151,25 +166,45 @@ This is the recommended macOS path. If you prefer a different compiler, you can 
 
 ### Linux
 
-Install `cmake`, `glfw`, `glm`, and `libpng` with your package manager, and make sure a C++20-capable compiler such as `g++` or `clang++` is installed.
-
-If CMake does not pick the compiler you expect, override it explicitly:
+Install a C++20-capable compiler such as `g++` or `clang++`:
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)" -DCMAKE_CXX_COMPILER=/path/to/clang++
+sudo apt install g++
 ```
 
-Then clone, set up Python, and build:
+Install the native dependencies:
+
+```bash
+sudo apt install cmake glfw3 libglm-dev libpng-dev
+```
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/milleeklof/surfex.git
 cd surfex
+```
+
+Create and activate a Python environment, then install `pybind11` into it:
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip pybind11
+```
+
+Configure, build, and install Surfex:
+
+```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
 cmake --build build
 cmake --install build
+```
+
+If CMake does not find the compiler you want, try setting it explicitly on the configure step:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)" -DCMAKE_CXX_COMPILER=/path/to/clang++
 ```
 
 After installation, this should work without `PYTHONPATH`:
