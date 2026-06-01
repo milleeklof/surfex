@@ -8,6 +8,7 @@
   <a href="#exampe">Example</a> ·
   <a href="#controls">Controls</a> ·
   <a href="#clone-and-build">Clone and Build</a> ·
+  <a href="#verify">Verify</a> ·
   <a href="#license">License</a>
 </p>
 
