@@ -166,16 +166,13 @@ This is the recommended macOS path. If you prefer a different compiler, you can 
 
 ### Linux
 
-Install a C++20-capable compiler such as `g++` or `clang++`:
-
-```bash
-sudo apt install g++
-```
+Install a C++20-capable compiler, such as 
+`g++` or `clang++`
 
 Install the native dependencies:
 
 ```bash
-sudo apt install cmake glfw3 libglm-dev libpng-dev
+cmake glfw3 libglm-dev libpng-dev
 ```
 
 Clone the repository:
@@ -207,11 +204,6 @@ If CMake does not find the compiler you want, try setting it explicitly on the c
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)" -DCMAKE_CXX_COMPILER=/path/to/clang++
 ```
 
-After installation, this should work without `PYTHONPATH`:
-
-```python
-import surfex
-```
 
 ## Verify
 
