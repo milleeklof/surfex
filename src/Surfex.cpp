@@ -1,8 +1,8 @@
 #include "Surfex.h"
 
 #include <algorithm>
-#include <cmath>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -215,6 +215,13 @@ Surfex::Surfex(std::array<float, 2> xRange, std::array<float, 2> yRange) {
 
 Surfex::~Surfex() { cleanup(); }
 
+void Surfex::setTitle(std::string newTitle) {
+  this->title = std::move(newTitle);
+  if (window) {
+    glfwSetWindowTitle(window, title.c_str());
+  }
+}
+
 Surfex::Surface Surfex::add(Function2D func, const std::string &color,
                             float alpha) {
   return addNamed(func, "function", color, alpha);
@@ -257,8 +264,8 @@ Surfex::Surface Surfex::addNamed(Function2D func, std::array<float, 2> xRange,
   Surface surface;
   surface.functionName = functionName;
   const auto start = std::chrono::steady_clock::now();
-  surface.mesh = generateSurfaceMesh(func, xRange[0], xRange[1], yRange[0],
-                                      yRange[1], n);
+  surface.mesh =
+      generateSurfaceMesh(func, xRange[0], xRange[1], yRange[0], yRange[1], n);
   const auto elapsed = std::chrono::steady_clock::now() - start;
   meshGenerationMs +=
       std::chrono::duration<double, std::milli>(elapsed).count();
@@ -450,14 +457,15 @@ void Surfex::printSummary(double elapsedMs) const {
     }
   }
 
-  std::cout << "=== plot (" << title << "): Function(s): ";
+  std::cout << "=== \"" << title << "\":===\n";
+  std::cout << "\tFunction(s): ";
   for (std::size_t i = 0; i < names.size(); ++i) {
     if (i != 0) {
       std::cout << ", ";
     }
     std::cout << names[i];
   }
-  std::cout << ", mesh generation: " << elapsedMs << " ms ===\n";
+  std::cout << "\n\tMesh generation time: " << elapsedMs << " ms\n";
 }
 
 void Surfex::processInput(float deltaTime) {
@@ -632,7 +640,6 @@ void Surfex::run() {
 
       processInput(deltaTime);
       renderFrame();
-
     }
 
     cleanup();

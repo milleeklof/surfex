@@ -35,6 +35,8 @@ public:
 
   ~Surfex();
 
+  void setTitle(std::string title);
+
   Surface add(Function2D func, const std::string &color = "blue",
               float alpha = 1.0f);
 

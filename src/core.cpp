@@ -40,8 +40,9 @@ PYBIND11_MODULE(_core, m)
         .def(py::init<std::array<float, 2>, std::array<float, 2>>(),
              py::arg("x_range"),
              py::arg("y_range"))
+        .def("set_title", &Surfex::setTitle, py::arg("title"))
         .def("add",
-             [](Surfex &self, py::function function, const std::string &color, float alpha) {
+              [](Surfex &self, py::function function, const std::string &color, float alpha) {
                  const std::string functionName = functionNameFromPython(function);
                  Surfex::Function2D wrapped = [function](float x, float y) {
                      py::gil_scoped_acquire gil;
