@@ -37,7 +37,7 @@ It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive
 
 - Python 3.10+
 - CMake 3.20+
-- A C++20 compiler
+- A C++20 compiler available on your system `PATH`
 - OpenGL, GLFW, GLM, and libpng development packages
 - `pybind11` in the same Python environment used for the build
 
@@ -127,85 +127,46 @@ Surfex is installed from source with CMake. CMake uses the Python interpreter yo
 
 ### macOS
 
-Install the native dependencies first.
+Install Apple Command Line Tools if needed to get Apple `clang++`:
 
-#### Dependencies
+```bash
+xcode-select --install
+```
+
+Then install the dependencies, clone the repository, and build:
 
 ```bash
 brew install cmake glfw glm libpng pybind11
-```
-
-Clone the repository with HTTPS or SSH.
-
-#### HTTPS
-
-```bash
 git clone https://github.com/milleeklof/surfex.git
 cd surfex
-```
-
-#### SSH
-
-```bash
-git clone git@github.com:milleeklof/surfex.git
-cd surfex
-```
-
-Create and activate a Python environment, then install `pybind11` into it.
-
-#### Python
-
-```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip pybind11
-```
-
-Configure, build, and install Surfex into that environment.
-
-#### Build
-
-```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
 cmake --build build
 cmake --install build
 ```
 
+This is the recommended macOS path. If you prefer a different compiler, you can also install one with Homebrew, such as `llvm` or `gcc`, and point CMake at it if needed.
+
 ### Linux
 
-Install `cmake`, `glfw`, `glm`, and `libpng` with your package manager if they are not already present.
+Install `cmake`, `glfw`, `glm`, and `libpng` with your package manager, and make sure a C++20-capable compiler such as `g++` or `clang++` is installed.
 
-Clone the repository with HTTPS or SSH.
+If CMake does not pick the compiler you expect, override it explicitly:
 
-#### HTTPS
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)" -DCMAKE_CXX_COMPILER=/path/to/clang++
+```
+
+Then clone, set up Python, and build:
 
 ```bash
 git clone https://github.com/milleeklof/surfex.git
 cd surfex
-```
-
-#### SSH
-
-```bash
-git clone git@github.com:milleeklof/surfex.git
-cd surfex
-```
-
-Create and activate a Python environment, then install `pybind11` into it.
-
-#### Python
-
-```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip pybind11
-```
-
-Configure, build, and install Surfex into that environment.
-
-#### Build
-
-```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
 cmake --build build
 cmake --install build
