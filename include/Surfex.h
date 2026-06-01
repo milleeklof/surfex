@@ -92,11 +92,10 @@ private:
   bool orientationAnimating = false;
   bool saveScreenshotRequested = false;
   bool summaryPrinted = false;
-  bool plotTimingStarted = false;
   float targetYaw = 0.0f;
   float targetPitch = 0.0f;
 
-  std::chrono::steady_clock::time_point plotStartTime;
+  double meshGenerationMs = 0.0;
 
   GLFWwindow *window = nullptr;
 

@@ -254,15 +254,14 @@ Surfex::Surface Surfex::addNamed(Function2D func, std::array<float, 2> xRange,
                                  std::array<float, 2> yRange,
                                  const std::string &functionName,
                                  const std::string &color, float alpha) {
-  if (!plotTimingStarted) {
-    plotTimingStarted = true;
-    plotStartTime = std::chrono::steady_clock::now();
-  }
-
   Surface surface;
   surface.functionName = functionName;
+  const auto start = std::chrono::steady_clock::now();
   surface.mesh = generateSurfaceMesh(func, xRange[0], xRange[1], yRange[0],
                                       yRange[1], n);
+  const auto elapsed = std::chrono::steady_clock::now() - start;
+  meshGenerationMs +=
+      std::chrono::duration<double, std::milli>(elapsed).count();
   surface.color = color;
   surface.alpha = alpha;
   surfaces.push_back(surface);
@@ -458,7 +457,7 @@ void Surfex::printSummary(double elapsedMs) const {
     }
     std::cout << names[i];
   }
-  std::cout << ", time: " << elapsedMs << " ms ===\n";
+  std::cout << ", mesh generation: " << elapsedMs << " ms ===\n";
 }
 
 void Surfex::processInput(float deltaTime) {
@@ -618,6 +617,12 @@ void Surfex::run() {
     createAxis();
     createGrid();
     createBuffers();
+
+    if (!summaryPrinted && !surfaces.empty()) {
+      printSummary(meshGenerationMs);
+      summaryPrinted = true;
+    }
+
     float lastTime = static_cast<float>(glfwGetTime());
 
     while (!glfwWindowShouldClose(window)) {
@@ -628,13 +633,6 @@ void Surfex::run() {
       processInput(deltaTime);
       renderFrame();
 
-      if (!summaryPrinted && plotTimingStarted) {
-        const auto elapsed = std::chrono::steady_clock::now() - plotStartTime;
-        const double elapsedMs =
-            std::chrono::duration<double, std::milli>(elapsed).count();
-        printSummary(elapsedMs);
-        summaryPrinted = true;
-      }
     }
 
     cleanup();
