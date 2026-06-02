@@ -3,8 +3,8 @@
 """List Python interpreters on PATH and whether they can import Surfex.
 
 Usage:
-  python scripts/check_surfex_install.py
-  python scripts/check_surfex_install.py /path/to/python /other/python
+  python tests/check_surfex_install.py
+  python tests/check_surfex_install.py /path/to/python /other/python
 """
 
 from __future__ import annotations

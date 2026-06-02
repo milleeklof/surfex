@@ -39,7 +39,7 @@ It combines a Python-facing API with an OpenGL/C++ renderer for fast interactive
 - CMake 3.20+
 - A C++20 compiler available on your system `PATH`
 - OpenGL, GLFW, GLM, and libpng development packages
-- `pybind11` in the same Python environment used for the build
+- `pybind11` is managed automatically by the installer
 
 ## Architecture
 
@@ -120,99 +120,119 @@ if __name__ == "__main__":
 - `Q`: close the current window
 
 
-
 ## Clone and Build
 
-Surfex is installed from source with CMake. CMake uses the Python interpreter you pass in `Python_EXECUTABLE` to locate headers, pybind11, and the correct `site-packages` directory.
+Surfex is distributed as source code and must be built locally.
+
+### Requirements
+
+Surfex requires:
+
+* A C++20 compiler (`clang++` or `g++`)
+* CMake ≥ 3.20
+* Python
+* GLFW
+* libpng
+
+---
 
 ### macOS
 
-Install Apple Command Line Tools if needed to get Apple `clang++`:
+Install Apple's command line tools:
 
 ```bash
 xcode-select --install
 ```
 
-Install the native dependencies:
+Install the required dependencies:
 
 ```bash
-brew install cmake glfw glm libpng pybind11
+brew install cmake glfw glm libpng
 ```
 
-Clone the repository:
-
-```bash
-git clone https://github.com/milleeklof/surfex.git
-cd surfex
-```
-
-Create and activate a Python environment, then install `pybind11` into it:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -U pip pybind11
-```
-
-Configure, build, and install Surfex:
-
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
-cmake --build build
-cmake --install build
-```
-
-This is the recommended macOS path. If you prefer a different compiler, you can also install one with Homebrew, such as `llvm` or `gcc`, and point CMake at it if needed.
+---
 
 ### Linux
 
-Install a C++20-capable compiler, such as 
-`g++` or `clang++`
+Install a C++20 compiler and the required dependencies.
 
-Install the native dependencies:
+On Ubuntu/Debian:
 
 ```bash
-cmake glfw3 libglm-dev libpng-dev
+sudo apt install \
+    build-essential \
+    cmake \
+    libglfw3-dev \
+    libglm-dev \
+    libpng-dev
 ```
 
-Clone the repository:
+---
+
+### Installation (recommended)
+
+Install Surfex by cloning the repository and running the installer:
 
 ```bash
 git clone https://github.com/milleeklof/surfex.git
 cd surfex
+./install.sh
 ```
 
-Create and activate a Python environment, then install `pybind11` into it:
+`./install.sh` will:
+
+1. Discover Python installations.
+2. Show each interpreter’s path, Python version, and whether Surfex is already installed.
+3. Let you choose one interpreter.
+4. Install `pybind11` automatically if it is missing.
+5. Check whether the selected interpreter can write to its install location.
+6. Offer a local `.venv` fallback when needed.
+7. If the install location is not writable, offer another interpreter, a local `.venv`, sudo, or cancel.
+8. Build and install Surfex.
+9. Let you quit at any prompt with `Q`, `q`, or `quit`.
+
+If the selected Python is externally managed, the installer may offer a `.venv` fallback or a force-install option.
+
+Advanced override: show system Python interpreters too.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -U pip pybind11
+SURFEX_SHOW_SYSTEM_PYTHON=1 ./install.sh
 ```
 
-Configure, build, and install Surfex:
+After installation, `import surfex` should work from the interpreter you selected.
+
+### Uninstallation
+
+To remove Surfex from a selected interpreter:
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)"
-cmake --build build
-cmake --install build
+./uninstall.sh
 ```
 
-If CMake does not find the compiler you want, try setting it explicitly on the configure step:
+`./uninstall.sh` will:
 
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DPython_EXECUTABLE="$(which python)" -DCMAKE_CXX_COMPILER=/path/to/clang++
-```
+1. Use the same interpreter-selection workflow as the installer.
+2. Let you quit at any prompt with `Q`, `q`, or `quit`.
+3. Remove only the Surfex package directory from the selected interpreter.
+4. Leave `pybind11` and all other Python packages untouched.
+
+By default, system Python interpreters such as `/usr/bin/python3` are hidden when better options exist. Use `SURFEX_SHOW_SYSTEM_PYTHON=1 ./install.sh` or `SURFEX_SHOW_SYSTEM_PYTHON=1 ./uninstall.sh` to reveal them when needed.
+
 
 
 ## Verify
 
 After building and installing, you can check two things:
 
+Verify the installation using the same Python interpreter or environment that you selected during installation.
+
+For example, if you installed Surfex into a Conda environment, activate that environment before testing.
+If you installed Surfex into a virtual environment, activate that virtual environment before testing.
+
 1. Which Python environment has Surfex installed:
 
 ```bash
-python scripts/check_surfex_install.py
+python tests/check_surfex_install.py
 ```
 
 2. Whether the basic Python API smoke test passes:
