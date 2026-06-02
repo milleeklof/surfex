@@ -119,6 +119,21 @@ def python_version(python: str) -> str:
     return result.stdout.strip() or "unknown"
 
 
+def python_version_parts(python: str) -> tuple[int, int] | None:
+    version = python_version(python)
+    parts = version.split(".")
+    if len(parts) < 2:
+        return None
+    if not parts[0].isdigit() or not parts[1].isdigit():
+        return None
+    return int(parts[0]), int(parts[1])
+
+
+def python_supported(python: str) -> bool:
+    parts = python_version_parts(python)
+    return parts is not None and parts >= (3, 10)
+
+
 def module_installed(python: str, module: str) -> bool:
     code = f"import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('{module}') else 1)"
     return run_capture([python, "-c", code]).returncode == 0
@@ -170,6 +185,16 @@ print('1' if stdlib and (Path(stdlib) / 'EXTERNALLY-MANAGED').exists() else '0')
 
 def pip_install_pybind11(python: str, break_system_packages: bool = False) -> tuple[bool, str]:
     cmd = [python, "-m", "pip", "install"]
+    if break_system_packages:
+        cmd.append("--break-system-packages")
+    cmd.append("pybind11")
+    result = run_capture(cmd)
+    output = (result.stdout or "") + ("\n" + result.stderr if result.stderr else "")
+    return result.returncode == 0, output.strip()
+
+
+def pip_install_pybind11_with_sudo(python: str, break_system_packages: bool = False) -> tuple[bool, str]:
+    cmd = ["sudo", "env", f"PATH={os.environ.get('PATH', '')}", python, "-m", "pip", "install"]
     if break_system_packages:
         cmd.append("--break-system-packages")
     cmd.append("pybind11")

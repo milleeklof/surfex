@@ -5,7 +5,7 @@
   <a href="#requirements">Requirements</a> ·
   <a href="#architecture">Architecture</a> ·
   <a href="#workflow">Workflow</a> ·
-  <a href="#exampe">Example</a> ·
+  <a href="#example">Example</a> ·
   <a href="#controls">Controls</a> ·
   <a href="#clone-and-build">Clone and Build</a> ·
   <a href="#verify">Verify</a> ·
@@ -162,9 +162,13 @@ On Ubuntu/Debian:
 sudo apt install \
     build-essential \
     cmake \
+    libgl1-mesa-dev \
     libglfw3-dev \
     libglm-dev \
-    libpng-dev
+    libpng-dev \
+    python3-dev \
+    python3-pip \
+    python3-venv
 ```
 
 ---
@@ -183,13 +187,14 @@ cd surfex
 
 1. Discover Python installations.
 2. Show each interpreter’s path, Python version, and whether Surfex is already installed.
-3. Let you choose one interpreter.
-4. Install `pybind11` automatically if it is missing.
-5. Check whether the selected interpreter can write to its install location.
-6. Offer a local `.venv` fallback when needed.
-7. If the install location is not writable, offer another interpreter, a local `.venv`, sudo, or cancel.
-8. Build and install Surfex.
-9. Let you quit at any prompt with `Q`, `q`, or `quit`.
+3. Mark Python versions below 3.10 as unsupported.
+4. Let you choose one interpreter.
+5. Install `pybind11` automatically if it is missing.
+6. Check whether the selected interpreter can write to its install location.
+7. Offer a local `.venv` fallback when needed.
+8. If the install location is not writable, offer another interpreter, a local `.venv`, sudo, or cancel.
+9. Build and install Surfex.
+10. Let you quit at any prompt with `Q`, `q`, or `quit`.
 
 If the selected Python is externally managed, the installer may offer a `.venv` fallback or a force-install option.
 

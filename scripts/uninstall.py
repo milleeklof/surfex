@@ -11,6 +11,7 @@ from installer_common import (
     discover_pythons,
     module_installed,
     python_version,
+    python_supported,
     resolve_path,
     run,
     site_packages_path,
@@ -45,7 +46,9 @@ def show_interpreters(interpreters: list[str]) -> None:
     for index, python in enumerate(interpreters, start=1):
         print(f"[{index}] {python}")
         print(f"    Python {python_version(python)}")
-        if resolve_path(python) == active:
+        if not python_supported(python):
+            print("    [UNSUPPORTED]")
+        if resolve_path(python) == active and python_supported(python):
             print("    (recommended)")
         print(f"    {status_text(module_installed(python, 'surfex'))}")
         print()

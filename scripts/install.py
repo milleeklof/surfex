@@ -12,7 +12,9 @@ from installer_common import (
     externally_managed,
     module_installed,
     pip_install_pybind11,
+    pip_install_pybind11_with_sudo,
     python_version,
+    python_supported,
     resolve_path,
     run,
     site_packages_path,
@@ -49,7 +51,9 @@ def show_interpreters(interpreters: list[str]) -> None:
     for index, python in enumerate(interpreters, start=1):
         print(f"[{index}] {python}")
         print(f"    Python {python_version(python)}")
-        if resolve_path(python) == active:
+        if not python_supported(python):
+            print("    [UNSUPPORTED]")
+        if resolve_path(python) == active and python_supported(python):
             print("    (recommended)")
         print(f"    {status_text(module_installed(python, 'surfex'))}")
         print()
@@ -83,12 +87,14 @@ def reinstall_prompt() -> bool:
     return prompt_choice({"1", "2"}) == "1"
 
 
-def ensure_pybind11(python: str) -> str | None:
+def ensure_pybind11(python: str, use_sudo: bool = False) -> str | None:
     if module_installed(python, "pybind11"):
         return python
 
     print("pybind11 is missing in the selected environment. Installing it now...\n")
-    ok, output = pip_install_pybind11(python)
+    ok, output = (
+        pip_install_pybind11_with_sudo(python) if use_sudo else pip_install_pybind11(python)
+    )
     if ok:
         return python
 
@@ -112,7 +118,11 @@ def ensure_pybind11(python: str) -> str | None:
         if choice == "2":
             return None
         if choice == "3":
-            ok, output = pip_install_pybind11(python, break_system_packages=True)
+            ok, output = (
+                pip_install_pybind11_with_sudo(python, break_system_packages=True)
+                if use_sudo
+                else pip_install_pybind11(python, break_system_packages=True)
+            )
             if ok:
                 return python
             print(output or "Failed to install pybind11 with --break-system-packages.", file=sys.stderr)
@@ -168,21 +178,23 @@ def main() -> int:
             choice = prompt_choice({str(i) for i in range(1, len(interpreters) + 1)})
             chosen = interpreters[int(choice) - 1]
 
+        if not python_supported(chosen):
+            print("Python versions below 3.10 are not supported by Surfex. Please choose another interpreter.\n")
+            continue
+
         if surfex_location(chosen):
             if not reinstall_prompt():
                 print("Installation cancelled.")
                 return 0
 
-        chosen_python = ensure_pybind11(chosen)
-        if chosen_python is None:
-            continue
-
-        writable_choice = ensure_writable_target(chosen_python)
+        writable_choice = ensure_writable_target(chosen)
         if writable_choice is None:
             continue
         chosen_python, use_sudo = writable_choice
 
-        chosen_python = ensure_pybind11(chosen_python) or chosen_python
+        chosen_python = ensure_pybind11(chosen_python, use_sudo=use_sudo)
+        if chosen_python is None:
+            continue
         clear_build_dir_if_needed(chosen_python)
         print(f"Using Python: {chosen_python}\n")
         run(["cmake", "-S", str(REPO_ROOT), "-B", str(BUILD_DIR), f"-DPython_EXECUTABLE={chosen_python}"])
