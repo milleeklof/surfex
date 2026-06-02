@@ -229,7 +229,7 @@ By default, system Python interpreters such as `/usr/bin/python3` are hidden whe
 
 After building and installing, you can check two things:
 
-Verify the installation using the same Python interpreter or environment that you selected during installation.
+Verify the installation using the *same Python interpreter* or environment that you selected during installation.
 
 For example, if you installed Surfex into a Conda environment, activate that environment before testing.
 If you installed Surfex into a virtual environment, activate that virtual environment before testing.
