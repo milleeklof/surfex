@@ -1,6 +1,7 @@
 #include <array>
 #include <functional>
 #include <filesystem>
+#include <memory>
 #include <string>
 
 #include <pybind11/functional.h>
@@ -36,7 +37,7 @@ PYBIND11_MODULE(_core, m)
         .def_readonly("color", &Surfex::Surface::color)
         .def_readonly("alpha", &Surfex::Surface::alpha);
 
-    py::class_<Surfex>(m, "Surfex")
+    py::class_<Surfex, std::unique_ptr<Surfex>>(m, "Surfex")
         .def(py::init<std::array<float, 2>, std::array<float, 2>>(),
              py::arg("x_range"),
              py::arg("y_range"))

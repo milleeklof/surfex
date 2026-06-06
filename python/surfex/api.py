@@ -1,5 +1,6 @@
 import inspect
 import re
+from collections import deque
 
 from ._core import Surfex as _Surfex
 import gc
@@ -12,12 +13,12 @@ class Surfex(_Surfex):
     def __init__(self, x_range, y_range, subdivisions=500, title=None):
         super().__init__(x_range, y_range)
         self.set_resolution(subdivisions)
-        _plots.append(self)
         inferred = title or _infer_plot_name() or "plot"
         if inferred.startswith("Surfex - "):
             self.set_title(inferred)
         else:
             self.set_title(f"Surfex - {inferred}")
+        _plots.append(self)
 
 
 def _infer_plot_name():
@@ -46,12 +47,19 @@ def init(x_range, y_range, subdivisions=500, title=None):
 
 
 def show():
-    plots = list(_plots)
+    plots = deque(_plots)
     _plots.clear()
 
-    for plot in plots:
-        plot.run()
-        del plot
+    try:
+        while plots:
+            plot = plots.popleft()
+            try:
+                plot.run()
+            finally:
+                del plot
+                gc.collect()
+    finally:
+        plots.clear()
         gc.collect()
 
 

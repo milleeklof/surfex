@@ -9,8 +9,8 @@ struct Axis
     void draw(const glm::mat4& MVP) const;
 
 private:
-    unsigned int VAO;
-    unsigned int VBO;
-    unsigned int shaderProgram;
-    int vertexCount;
+    unsigned int VAO = 0;
+    unsigned int VBO = 0;
+    unsigned int shaderProgram = 0;
+    int vertexCount = 0;
 };

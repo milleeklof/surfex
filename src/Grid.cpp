@@ -3,6 +3,24 @@
 #include <vector>
 #include <glad/glad.h>
 
+namespace {
+
+struct ShaderGuard {
+    explicit ShaderGuard(unsigned int shaderId) : id(shaderId) {}
+    ~ShaderGuard() {
+        if (id != 0) {
+            glDeleteShader(id);
+        }
+    }
+
+    ShaderGuard(const ShaderGuard&) = delete;
+    ShaderGuard& operator=(const ShaderGuard&) = delete;
+
+    unsigned int id;
+};
+
+} // namespace
+
 static std::vector<float> generateGridVertices(float xmin,
                                                 float xmax,
                                                 float ymin,
@@ -82,15 +100,13 @@ Grid::Grid(float xmin, float xmax, float ymin, float ymax, float spacing)
 
         glBindVertexArray(0);
 
-        const unsigned int vs =
+        const ShaderGuard vsGuard(
             compileShaderOrThrow(GL_VERTEX_SHADER, gridVertexShaderSrc,
-                                 "Grid vertex");
-        const unsigned int fs =
+                                 "Grid vertex"));
+        const ShaderGuard fsGuard(
             compileShaderOrThrow(GL_FRAGMENT_SHADER, gridFragmentShaderSrc,
-                                 "Grid fragment");
-        shaderProgram = linkProgramOrThrow(vs, fs, "Grid");
-        glDeleteShader(vs);
-        glDeleteShader(fs);
+                                 "Grid fragment"));
+        shaderProgram = linkProgramOrThrow(vsGuard.id, fsGuard.id, "Grid");
     } catch (...) {
         glDeleteBuffers(1, &VBO);
         glDeleteVertexArrays(1, &VAO);
@@ -100,9 +116,15 @@ Grid::Grid(float xmin, float xmax, float ymin, float ymax, float spacing)
 
 Grid::~Grid()
 {
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteProgram(shaderProgram);
+    if (VBO != 0) {
+        glDeleteBuffers(1, &VBO);
+    }
+    if (VAO != 0) {
+        glDeleteVertexArrays(1, &VAO);
+    }
+    if (shaderProgram != 0) {
+        glDeleteProgram(shaderProgram);
+    }
 }
 
 

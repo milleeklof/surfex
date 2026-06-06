@@ -15,5 +15,5 @@ struct Shader
     void setFloat(const std::string& name, float value) const;
 
 private:
-    unsigned int programID;
+    unsigned int programID = 0;
 };

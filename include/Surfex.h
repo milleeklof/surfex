@@ -3,6 +3,7 @@
 #include <chrono>
 #include <array>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -103,7 +104,7 @@ private:
 
   std::vector<Surface> surfaces;
   Camera camera{};
-  Axis *axis = nullptr;
-  Grid *grid = nullptr;
-  Shader *surfaceShader = nullptr;
+  std::unique_ptr<Axis> axis;
+  std::unique_ptr<Grid> grid;
+  std::unique_ptr<Shader> surfaceShader;
 };

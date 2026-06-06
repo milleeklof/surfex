@@ -3,15 +3,49 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <stdexcept>
+#include <string>
 
 #include <glm/glm.hpp>
 
+namespace {
+
+std::size_t checkedMultiply(std::size_t lhs, std::size_t rhs,
+                            const char *what) {
+  if (lhs != 0 && rhs > std::numeric_limits<std::size_t>::max() / lhs) {
+    throw std::overflow_error(std::string("Surface mesh ") + what +
+                              " count overflowed.");
+  }
+  return lhs * rhs;
+}
+
+void validateResolution(int n) {
+  if (n < 2) {
+    throw std::invalid_argument("Resolution must be between 2 and " +
+                                std::to_string(kMaxSurfaceResolution) + ".");
+  }
+  if (n > kMaxSurfaceResolution) {
+    throw std::invalid_argument("Resolution must be between 2 and " +
+                                std::to_string(kMaxSurfaceResolution) + ".");
+  }
+}
+
+} // namespace
+
 Mesh generateSurfaceMesh(std::function<float(float, float)> f, float xmin,
                          float xmax, float ymin, float ymax, int n) {
+  validateResolution(n);
+
+  const std::size_t nPoints = static_cast<std::size_t>(n);
   Mesh mesh;
 
-  mesh.vertices.reserve(n * n * 6);
-  mesh.indices.reserve((n - 1) * (n - 1) * 6);
+  mesh.vertices.reserve(checkedMultiply(checkedMultiply(nPoints, nPoints,
+                                                        "vertex"),
+                                        6, "vertex"));
+  mesh.indices.reserve(checkedMultiply(checkedMultiply(nPoints - 1,
+                                                        nPoints - 1,
+                                                        "index"),
+                                        6, "index"));
 
   mesh.minZ = std::numeric_limits<float>::max();
   mesh.maxZ = -std::numeric_limits<float>::max();

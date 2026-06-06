@@ -235,7 +235,12 @@ Surfex::Surface Surfex::add(Function2D func, std::array<float, 2> xRange,
 
 void Surfex::setResolution(int n) {
   if (n < 2) {
-    throw std::invalid_argument("Resolution must be at least 2.");
+    throw std::invalid_argument("Resolution must be between 2 and " +
+                                std::to_string(kMaxSurfaceResolution) + ".");
+  }
+  if (n > kMaxSurfaceResolution) {
+    throw std::invalid_argument("Resolution must be between 2 and " +
+                                std::to_string(kMaxSurfaceResolution) + ".");
   }
 
   this->n = n;
@@ -253,8 +258,12 @@ void Surfex::setWindowSize(int width, int height) {
 Surfex::Surface Surfex::addNamed(Function2D func,
                                  const std::string &functionName,
                                  const std::string &color, float alpha) {
+  if (n < 2 || n > kMaxSurfaceResolution) {
+    throw std::invalid_argument("Resolution is invalid.");
+  }
+
   return addNamed(func, std::array<float, 2>{xmin, xmax},
-                  std::array<float, 2>{ymin, ymax}, functionName, color, alpha);
+                   std::array<float, 2>{ymin, ymax}, functionName, color, alpha);
 }
 
 Surfex::Surface Surfex::addNamed(Function2D func, std::array<float, 2> xRange,
@@ -386,8 +395,8 @@ void Surfex::initGL() {
 
   const std::string vertexShaderSource = loadShaderText("surface.vert");
   const std::string fragmentShaderSource = loadShaderText("surface.frag");
-  this->surfaceShader =
-      new Shader(vertexShaderSource.c_str(), fragmentShaderSource.c_str());
+  this->surfaceShader = std::make_unique<Shader>(vertexShaderSource.c_str(),
+                                                  fragmentShaderSource.c_str());
 }
 
 void Surfex::createCamera() {
@@ -407,10 +416,10 @@ void Surfex::createCamera() {
 }
 
 void Surfex::createGrid() {
-  this->grid = new Grid(xmin, xmax, ymin, ymax, 1.0f);
+  this->grid = std::make_unique<Grid>(xmin, xmax, ymin, ymax, 1.0f);
 }
 
-void Surfex::createAxis() { this->axis = new Axis(); }
+void Surfex::createAxis() { this->axis = std::make_unique<Axis>(); }
 
 void Surfex::createBuffers() {
   for (std::size_t i = 0; i < surfaces.size(); ++i) {
@@ -600,12 +609,9 @@ void Surfex::cleanup() {
     }
   }
 
-  delete axis;
-  axis = nullptr;
-  delete grid;
-  grid = nullptr;
-  delete surfaceShader;
-  surfaceShader = nullptr;
+  axis.reset();
+  grid.reset();
+  surfaceShader.reset();
 
   if (window) {
     glfwGetWindowPos(window, &lastWindowX, &lastWindowY);
@@ -614,14 +620,26 @@ void Surfex::cleanup() {
     window = nullptr;
     glfwTerminate();
   }
+
+  orientationAnimating = false;
+  saveScreenshotRequested = false;
+  targetYaw = 0.0f;
+  targetPitch = 0.0f;
+  summaryPrinted = false;
+  meshGenerationMs = 0.0;
 }
 
 void Surfex::run() {
   initWindow();
   try {
     summaryPrinted = false;
+    meshGenerationMs = 0.0;
+    saveScreenshotRequested = false;
+    orientationAnimating = false;
     initGL();
     createCamera();
+    targetYaw = camera.yaw;
+    targetPitch = camera.pitch;
     createAxis();
     createGrid();
     createBuffers();

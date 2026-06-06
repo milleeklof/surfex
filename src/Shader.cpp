@@ -27,7 +27,9 @@ Shader::Shader(const char* vertexSrc, const char* fragmentSrc)
 
 Shader::~Shader()
 {
-    glDeleteProgram(programID);
+    if (programID != 0) {
+        glDeleteProgram(programID);
+    }
 }
 
 void Shader::use() const
@@ -58,5 +60,4 @@ void Shader::setFloat(const std::string& name, float value) const
 {
     glUniform1f(glGetUniformLocation(programID, name.c_str()), value);
 }
-
 

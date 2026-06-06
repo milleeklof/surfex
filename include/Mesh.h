@@ -4,6 +4,8 @@
 #include <functional>
 #include <vector>
 
+inline constexpr int kMaxSurfaceResolution = 1024;
+
 // A Mesh consists of vertices and indices
 struct Mesh {
   std::vector<float> vertices;
